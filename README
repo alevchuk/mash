@@ -1,0 +1,4 @@
+The command clustalw-to-html visualizes multiple sequence alignments
+
+INPUT:  ClustalW  - a standard format for storing multiple sequence alignments
+OUTPUT: HTML page - a human readable representation
