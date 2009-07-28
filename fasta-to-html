@@ -1,0 +1,101 @@
+#!/usr/bin/ruby
+
+ACCESSIONS = []
+SEQUENCES  = []
+TEMPLATE   = []
+
+def read
+
+  while line = STDIN.gets
+    line.strip!
+
+    if line.empty?
+      next
+    end
+
+    if line =~ /^>(.*)/   
+      ACCESSIONS.push $1
+    else
+      current = SEQUENCES[ACCESSIONS.size - 1]
+      SEQUENCES[ACCESSIONS.size - 1] = (current || "") + line
+    end
+  
+  end
+end
+
+def load_template
+  File.open(__FILE__) do |f|
+    while line = f.gets
+      break if line =~ /^# *%%TEMPLATE%%/
+    end
+    while line = f.gets
+      line.strip!
+      break if !(line =~ /^##/) # all lines in must start with ##
+      TEMPLATE.push(line.sub(/## ?/, '') + "\n")
+    end
+  end
+end
+
+def generate
+  longest = ACCESSIONS.inject(0){|result, element| [result, element.size].max}
+  TEMPLATE.each do |line|
+    if line =~ /%%SEQUENCE%%/
+      SEQUENCES.each_with_index do |s, i| 
+        puts line.sub('%%SEQUENCE%%', "#{ACCESSIONS[i].ljust(longest)} #{s}")
+      end
+    else
+      puts line
+    end
+  end
+end
+
+
+
+read
+load_template
+generate
+
+
+
+# %%TEMPLATE%%
+## <?xml version="1.0" encoding="utf-8"?>
+## <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+## 
+## <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+## <head>
+## <title>clustalw-to-html</title>
+## 
+## <style type="text/css">
+## div {white-space: pre; font-family: monospace;}
+## 
+## r10 { background-color: #ff0000; color: white; font-weight: bold; }
+## r09 { background-color: #ff0000; color: gray;}
+## r08 { background-color: #ff6b44; color: gray;}
+## r07 { background-color: #ff925c; color: gray;}
+## r06 { background-color: #ffb677; color: gray;}
+## r05 { background-color: #ffc380; color: black;}
+## r04 { background-color: #ffd796; color: black;}
+## r03 { background-color: #ffe6a8; color: black;}
+## r02 { background-color: #fff2ba; color: black;}
+## r01 { background-color: #fffcd4; color: black;}
+## </style>
+## 
+## </head>
+## <body>
+## 
+## <h2>Legend</h2>
+## <div><r10>&nbsp;~1.0&nbsp;</r10><r09>&nbsp;~0.9&nbsp;</r09><r08
+## >&nbsp;~0.8&nbsp;</r08><r07>&nbsp;~0.7&nbsp;</r07><r06
+## >&nbsp;~0.6&nbsp;</r06><r05>&nbsp;~0.5&nbsp;</r05><r04
+## >&nbsp;~0.4&nbsp;</r04><r03>&nbsp;~0.3&nbsp;</r03><r02
+## >&nbsp;~0.2&nbsp;</r02><r01>&nbsp;~0.1&nbsp;</r01></div>
+## 
+## <div style="white-space: pre; font-family: monospace; ">%%SEQUENCE%%</div>
+## 
+## 
+## <p style="margin-top: 5em;">
+## <a href="http://github.com/alevchuk/clustalw-to-html/">clustalw-to-html</a> 
+## </p>
+## 
+## </body>
+## </html>

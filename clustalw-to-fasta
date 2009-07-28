@@ -1,0 +1,46 @@
+#!/usr/bin/ruby
+
+ACCESSIONS = []
+SEQUENCES  = []
+HEADERS    = []
+
+def read
+  HEADERS.push STDIN.gets.chomp
+
+  # Skip empty lines
+  while c = STDIN.getc
+    if c.chr != "\n"
+      STDIN.ungetc(c)
+      break
+    end
+  end
+
+  seq_id = 0
+  while line = STDIN.gets
+    line.strip!
+    if line.empty?
+      seq_id = 0
+      next
+    end
+
+    s = line.split(" ")
+    accession, partial_sequence = s
+
+    ACCESSIONS[seq_id] ||= accession
+    current = SEQUENCES[seq_id]
+    SEQUENCES[seq_id] = (current || "") + partial_sequence
+
+    seq_id += 1
+  end
+end
+
+def output
+  SEQUENCES.each_with_index do |seq, i|
+    puts ">#{ACCESSIONS[i]}"
+    puts seq.scan(/.{79}/)
+  end
+end
+
+read
+output
+
