@@ -17,6 +17,8 @@ def read
 
   seq_id = 0
   while line = STDIN.gets
+    line.gsub!(/[:*.]/, '') # Remove consensus information
+
     line.strip!
     if line.empty?
       seq_id = 0
