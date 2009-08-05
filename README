@@ -5,4 +5,17 @@ OUTPUT: HTML page - a human readable representation
 
 
 RELATED WORK:
-  MView - http://bioweb2.pasteur.fr/docs/mview/
+
+  MView
+    http://bioweb2.pasteur.fr/docs/mview/
+
+    Can only highlight residues based on their Physico-Chemical Properties.
+    Cannot highlight well-conserved residues or Pfam domains.
+
+
+  T-Coffee
+    http://www.tcoffee.org/Projects_home_page/m_coffee_home_page.html#OUTPUT
+
+    Highlights well-conserved residues, but in T-Coffee the HTML generator
+    is coupled with the internal datastrucures used when making the actual 
+    multiple alignment so it cannot be used separately.
