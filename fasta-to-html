@@ -1,26 +1,59 @@
 #!/usr/bin/ruby
 
+require "open3"
+
+SRC_DIR = File.dirname(File.expand_path(__FILE__))
+
+HIGHLIGHT_REGIONS = "#{SRC_DIR}/highlight-regions.R"
+TMP_SCORES_FILE   = "#{SRC_DIR}/tmp/scores.#{Time.now.to_i}.#{(rand*100).to_i}"
+
 ACCESSIONS = []
 SEQUENCES  = []
 TEMPLATE   = []
 
-def read
+@consensus  = nil
+@consvalues = nil
+@memb_loci  = nil
+MEMB_SCORES = []
 
-  while line = STDIN.gets
-    line.strip!
+def read_and_highlight
+  cmd = "#{HIGHLIGHT_REGIONS} > #{TMP_SCORES_FILE}"
+  Open3.popen3(cmd) do |h_stdin, h_stdout, h_stderr|
+    while line = STDIN.gets
+      line.strip!
+      h_stdin.puts line
 
-    if line.empty?
-      next
-    end
-
-    if line =~ /^>(.*)/   
-      ACCESSIONS.push $1
-    else
-      current = SEQUENCES[ACCESSIONS.size - 1]
-      SEQUENCES[ACCESSIONS.size - 1] = (current || "") + line
-    end
+      if line.empty?
+        next
+      end
   
+      if line =~ /^>(.*)/ 
+        ACCESSIONS.push $1
+      else
+        current = SEQUENCES[ACCESSIONS.size - 1]
+        SEQUENCES[ACCESSIONS.size - 1] = (current || "") + line
+      end
+    end
+
+    h_stdin.close
+    err = h_stderr.readlines
+    STDERR.puts err.join("\n") unless err.empty?
+  end  
+
+  File.open(TMP_SCORES_FILE) do |f|
+    first3 = (1..3).collect{f.gets.chomp}
+  
+    @consensus   = first3[0].split("\t")
+    @consvalues  = first3[1].split("\t").collect{|i| i.to_f} 
+    @memb_loci   = first3[2].split("\t").collect{|i| i.to_i}
+  
+    while line = f.gets
+      MEMB_SCORES.push line.split("\t").collect{|i| i.to_i}
+    end
   end
+
+  File.delete(TMP_SCORES_FILE)
+
 end
 
 def load_template
@@ -39,11 +72,55 @@ end
 def generate
   longest = ACCESSIONS.inject(0){|result, element| [result, element.size].max}
   TEMPLATE.each do |line|
+
     if line =~ /%%SEQUENCE%%/
-      SEQUENCES.each_with_index do |s, i| 
-        puts line.sub('%%SEQUENCE%%', "#{ACCESSIONS[i].ljust(longest)} #{s}")
+      SEQUENCES.each_with_index do |s, i|
+        current = 0
+        s_tmp = []
+        s.split('').each_with_index do |c, i2|
+          if @memb_loci[current] == (i2 + 1)
+            html = c
+
+	    score = MEMB_SCORES[i][current]
+            if score >= 0
+              html = "<r0#{score}>#{html}</r0#{score}>"
+            elsif score >= 8
+              html = "<r08>#{html}</r08>"
+            end
+
+            cvalue = (@consvalues[current] * 10).to_i.to_s.rjust(2, '0')
+            html = "<b#{cvalue}>#{html}</b#{cvalue}>"
+
+
+            s_tmp.push html
+            current += 1
+          else
+            s_tmp.push c
+          end
+        end
+        html = "<ac>#{ACCESSIONS[i].ljust(longest)}</ac> #{s_tmp.join('')}"
+        puts line.sub('%%SEQUENCE%%', html)
       end
+
+    elsif line =~ /%%CONSENSUS%%/
+      consensus = []
+      current = 0
+      1.upto(SEQUENCES.first.size) do |i|
+        if @memb_loci[current] == i
+          cvalue = (@consvalues[current] * 10).to_i.to_s.rjust(2, '0')
+          html = "<b#{cvalue}>#{@consensus[current]}</b#{cvalue}>"
+          consensus.push html
+          current += 1
+        else
+          consensus.push '-'
+        end 
+      end
+
+      html = "<ac>#{'Consensus:'.ljust(longest)}</ac> #{consensus.join('')}"
+      line.gsub!('%%CONSENSUS%%', html)
+      puts line
     else
+      line.gsub!('%%TIME%%', Time.now.to_s)
       puts line
     end
   end
@@ -51,7 +128,7 @@ end
 
 
 
-read
+read_and_highlight
 load_template
 generate
 
@@ -66,34 +143,72 @@ generate
 ## <title>clustalw-to-html</title>
 ## 
 ## <style type="text/css">
-## div {white-space: pre; font-family: monospace;}
-## 
-## r10 { background-color: #ff0000; color: white; font-weight: bold; }
-## r09 { background-color: #ff0000; color: gray;}
-## r08 { background-color: #ff6b44; color: gray;}
-## r07 { background-color: #ff925c; color: gray;}
-## r06 { background-color: #ffb677; color: gray;}
-## r05 { background-color: #ffc380; color: black;}
-## r04 { background-color: #ffd796; color: black;}
-## r03 { background-color: #ffe6a8; color: black;}
-## r02 { background-color: #fff2ba; color: black;}
-## r01 { background-color: #fffcd4; color: black;}
+## div { letter-spacing: 1px; white-space: pre; font-family: monospace }
+## div { padding-top: 0.3em }
+## ac  { letter-spacing: 0px }
+##
+## r08 { background-color: #ff0000 }
+## r07 { background-color: #ff6b44 }
+## r06 { background-color: #ff925c }
+## r05 { background-color: #ffb677 }
+## r04 { background-color: #ffc380 }
+## r03 { background-color: #ffd796 }
+## r02 { background-color: #ffe6a8 }
+## r01 { background-color: #fff2ba }
+## r00 { background-color: #fffcd4 }
+##
+## b10 { border: #000 solid 3px; border-top: none;  }
+## b09 { border: #555 solid 2px; border-top: none;  }
+## b08 { border: #777 solid 2px; border-top: none;  }
+## b07 { border: #999 solid 2px; border-top: none;  }
+## b06 { border: #AAA solid 2px; border-top: none;  }
+## b05 { border: #777 solid 1px; border-top: none;  }
+## b04 { border: #999 solid 1px; border-top: none;  }
+## b03 { border: #BBB solid 1px; border-top: none;  }
+## b02 { border: #DDD solid 1px; border-top: none;  }
+## b01 { border: #EEE solid 1px; border-top: none;  }
+##
+## b10, b09, b08, b07, b06, b05, b04, b03, b02, b01 {
+##   letter-spacing: 0px; margin-right: 5px; margin-top: 5px
+## }
+##
+## .cons { padding-top: 0.7em }
 ## </style>
 ## 
 ## </head>
 ## <body>
 ## 
 ## <h2>Legend</h2>
-## <div><r10>&nbsp;~1.0&nbsp;</r10><r09>&nbsp;~0.9&nbsp;</r09><r08
-## >&nbsp;~0.8&nbsp;</r08><r07>&nbsp;~0.7&nbsp;</r07><r06
-## >&nbsp;~0.6&nbsp;</r06><r05>&nbsp;~0.5&nbsp;</r05><r04
-## >&nbsp;~0.4&nbsp;</r04><r03>&nbsp;~0.3&nbsp;</r03><r02
-## >&nbsp;~0.2&nbsp;</r02><r01>&nbsp;~0.1&nbsp;</r01></div>
-## 
-## <div style="white-space: pre; font-family: monospace; ">%%SEQUENCE%%</div>
-## 
-## 
-## <p style="margin-top: 5em;">
+## <div><ac>BLOSUM62 scores: <r08
+## >&nbsp;8 and more&nbsp;</r08><r07
+## >&nbsp;7&nbsp;</r07><r06
+## >&nbsp;6&nbsp;</r06><r05
+## >&nbsp;5&nbsp;</r05><r04
+## >&nbsp;4&nbsp;</r04><r03
+## >&nbsp;3&nbsp;</r03><r02
+## >&nbsp;2&nbsp;</r02><r01
+## >&nbsp;1&nbsp;</r01
+## >&nbsp;0&nbsp;-1&nbsp;-2&nbsp;-3&nbsp;-4</ac></div>
+##
+## <div><ac>consensus levels: </ac><b10
+## >&nbsp;1.0&nbsp;</b10><b09
+## >&nbsp;0.9&nbsp;</b09><b08
+## >&nbsp;0.8&nbsp;</b08><b07
+## >&nbsp;0.7&nbsp;</b07><b06
+## >&nbsp;0.6&nbsp;</b06><b05
+## >&nbsp;0.5&nbsp;</b05><b04
+## >&nbsp;0.4&nbsp;</b04><b03
+## >&nbsp;0.3&nbsp;</b03><b02
+## >&nbsp;0.2&nbsp;</b02><b01
+## >&nbsp;0.1&nbsp;</b01></div>
+## <p style="margin-top: 2em;"></p>
+##
+## <h2>Alignment</h2>
+## <div class="seq">%%SEQUENCE%%</div>
+## <div class="cons">%%CONSENSUS%%</div> 
+##
+## <p style="margin-top: 3em;">
+## Generated on %%TIME%% by
 ## <a href="http://github.com/alevchuk/clustalw-to-html/">clustalw-to-html</a> 
 ## </p>
 ## 
