@@ -1,4 +1,116 @@
 #!/usr/bin/ruby
-SRC_DIR = File.dirname(File.expand_path(__FILE__))
 
-system "#{SRC_DIR}/clustalw-to-fasta | #{SRC_DIR}/fasta-to-html"
+##    clustalw-to-html - multiple sequence alignment visualization in HTML
+##    Copyright (C) 2009  Aleksandr O. Levchuk
+##
+##    This program is free software: you can redistribute it and/or modify
+##    it under the terms of the GNU General Public License as published by
+##    the Free Software Foundation, either version 3 of the License, or
+##    (at your option) any later version.
+##
+##    This program is distributed in the hope that it will be useful,
+##    but WITHOUT ANY WARRANTY; without even the implied warranty of
+##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##    GNU General Public License for more details.
+##
+##    You should have received a copy of the GNU General Public License
+##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+f = __FILE__; loop {break unless File.symlink?(f); f = File.readlink(f)}
+SRC_DIR  = File.dirname(File.expand_path(f))
+
+SRC_NAME = File.basename(__FILE__)
+
+# Executables
+MKDIR  = "/bin/mkdir"
+WHOAMI = "/usr/bin/whoami"
+
+# Global Variables
+CLUSTALWS  = [] # CulstalW files
+@pfam_file = nil
+UNIQ_NAMES = []
+
+# Temporary
+OUT_FILES  = []
+USERNAME   = `#{WHOAMI}`.chomp
+TMP_DIR    = "/tmp/clustalw-to-html-#{USERNAME}"
+`#{MKDIR} -p #{TMP_DIR}`
+
+
+def generate_uniq_names
+  suffixes = {}
+  CLUSTALWS.each_with_index do |clustalwfile, clustalwfile_id|
+    basename = File.basename(clustalwfile)
+    if suffixes[basename].nil?
+      UNIQ_NAMES[clustalwfile_id] = basename
+      suffixes[basename] = 1
+    else
+      UNIQ_NAMES[clustalwfile_id] = "#{basename}.#{suffixes[basename]}"
+      suffixes[basename] += 1
+    end
+  end
+end
+
+def load_parameters
+  def usage
+    STDERR.puts %Q(
+Usage: #{SRC_NAME} [--pfams <pfamfile>] <clustalwfile> [<clustalwfile>]... 
+    )
+  end
+  
+  if ARGV.empty?
+    usage
+    exit
+  end
+  
+  if ARGV.select{|i| i == "--pfams"}.size > 1
+   STDERR.puts "ERROR: Wrong arguments. There must be one or zerro \"--pfams\""
+    usage
+    exit()
+  end
+  
+  if ARGV.include? "--pfams"
+    id = ARGV.index("--pfams")
+    @pfam_file = ARGV[id + 1] 
+    ARGV.delete_at(id + 1)
+    ARGV.delete_at(id)
+  end
+ 
+  ARGV.each do |i|
+    if i =~ /^-/
+      STDERR.puts "WARNING: Unknown argument #{i}"
+    else
+      CLUSTALWS.push(i)
+    end
+  end
+
+end
+
+
+load_parameters
+  
+generate_uniq_names
+
+CLUSTALWS.each_with_index do |clustalwfile, clustalwfile_id|
+  OUT_FILES[clustalwfile_id] = 
+    "#{TMP_DIR}/#{UNIQ_NAMES[clustalwfile_id]}.fasta"
+
+  File.open(clustalwfile) do |c_file|
+    cmd = "#{SRC_DIR}/clustalw-to-fasta > #{OUT_FILES[clustalwfile_id]}"
+    IO.popen(cmd, 'w') do |prog|
+      while line = c_file.gets
+        prog.puts line
+      end
+    end
+  end
+end
+
+cmd = "#{SRC_DIR}/fasta-to-html #{OUT_FILES.join(' ')}"
+if @pfam_file != nil
+  cmd += " --pfams #{@pfam_file}"
+end
+
+system cmd
+
+OUT_FILES.each {|f| File.delete(f)}
+

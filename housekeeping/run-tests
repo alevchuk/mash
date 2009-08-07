@@ -2,9 +2,10 @@
 
 SRC_DIR = File.dirname(File.expand_path(__FILE__)).gsub(`echo ~`.chomp, '~')
 
-cmd = "time cat #{SRC_DIR}/test2.fasta | \\\n" +
-      "  #{SRC_DIR}/../fasta-to-html > \\\n" +
-      "  test2.html"
+cmd = "time \\\n" +
+      "  #{SRC_DIR}/../fasta-to-html \\\n" +
+      "  #{SRC_DIR}/test.align.fasta #{SRC_DIR}/test2.align.fasta \\\n" +
+      "  --pfams #{SRC_DIR}/test.pfams"
 
 puts cmd
 exec cmd

@@ -1,12 +1,34 @@
 #!/usr/bin/ruby
 
-require "open3"
+##    clustalw-to-html - multiple sequence alignment visualization in HTML
+##    Copyright (C) 2009  Aleksandr O. Levchuk
+##
+##    This program is free software: you can redistribute it and/or modify
+##    it under the terms of the GNU General Public License as published by
+##    the Free Software Foundation, either version 3 of the License, or
+##    (at your option) any later version.
+##
+##    This program is distributed in the hope that it will be useful,
+##    but WITHOUT ANY WARRANTY; without even the implied warranty of
+##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##    GNU General Public License for more details.
+##
+##    You should have received a copy of the GNU General Public License
+##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SRC_DIR = File.dirname(File.expand_path(__FILE__))
+f = __FILE__; loop {break unless File.symlink?(f); f = File.readlink(f)}
+SRC_DIR  = File.dirname(File.expand_path(f))
 
+SRC_NAME = File.basename(__FILE__) 
+WORK_DIR = ENV["PWD"]
+
+# Executables
 HIGHLIGHT_REGIONS = "#{SRC_DIR}/highlight-regions.R"
-TMP_SCORES_FILE   = "#{SRC_DIR}/tmp/scores.#{Time.now.to_i}.#{(rand*100).to_i}"
+MKDIR  = "/bin/mkdir"
+WHOAMI = "/usr/bin/whoami"
+LN     = "/bin/ln"
 
+# Global Variables
 ACCESSIONS = []
 SEQUENCES  = []
 TEMPLATE   = []
@@ -16,16 +38,86 @@ TEMPLATE   = []
 @memb_loci  = nil
 MEMB_SCORES = []
 
-def read_and_highlight
-  cmd = "#{HIGHLIGHT_REGIONS} > #{TMP_SCORES_FILE}"
-  Open3.popen3(cmd) do |h_stdin, h_stdout, h_stderr|
-    while line = STDIN.gets
-      line.strip!
-      h_stdin.puts line
+PFAMS = {}
+VISIBLE_PFAMS = {}
 
-      if line.empty?
-        next
-      end
+FASTA_FILES = []
+UNIQ_NAMES  = [] # basename(FASTA_FILES) with suffixes on duplicates
+@pfam_file  = nil
+
+# Temporary
+TMP_FILES  = []
+USERNAME   = `#{WHOAMI}`.chomp
+TMP_DIR    = "/tmp/clustalw-to-html-#{USERNAME}"
+TMP_PREFIX = "#{Time.now.to_f}.#{(rand*10).to_i}"
+`#{MKDIR} -p #{TMP_DIR}`
+
+
+
+def load_parameters
+  def usage
+    STDERR.puts %Q(
+Usage: #{SRC_NAME} [--pfams <pfamfile>] <fastafile> [<fastafile>]... 
+       )
+  end
+
+  if ARGV.empty?
+    usage
+    exit
+  end
+
+  if ARGV.select{|i| i == "--pfams"}.size > 1
+   STDERR.puts "ERROR: Wrong arguments. There must be one or zerro \"--pfams\""
+    usage
+    exit()
+  end
+
+  if ARGV.include? "--pfams"
+    id = ARGV.index("--pfams")
+    @pfam_file = ARGV[id + 1]
+    ARGV.delete_at(id + 1)
+    ARGV.delete_at(id)
+  end
+
+  ARGV.each do |i|
+    if i =~ /^-/
+      STDERR.puts "WARNING: Unknown argument #{i}"
+    else
+      FASTA_FILES.push(i)
+    end
+  end
+
+end
+
+def generate_uniq_names
+  suffixes = {}
+  FASTA_FILES.each_with_index do |fastafile, fastafile_id|
+    basename = File.basename(fastafile)
+    if suffixes[basename].nil?
+      UNIQ_NAMES[fastafile_id] = basename
+      suffixes[basename] = 0
+    else
+      UNIQ_NAMES[fastafile_id] = "#{basename}.#{suffixes[basename]}"
+      suffixes[basename] += 1
+    end
+  end
+end
+
+def highlight_all
+  args = []
+  FASTA_FILES.each_with_index do |fastafile, fastafile_id|
+    args.push("#{fastafile} #{TMP_FILES[fastafile_id]}")
+  end
+
+  system "#{HIGHLIGHT_REGIONS} #{args.join(' ')}" # Fork an R script
+
+end
+
+def load_fastafile(file_id)
+  File.open(FASTA_FILES[file_id]) do |f|
+    while line = f.gets
+      line.strip!
+      next if line.empty?
   
       if line =~ /^>(.*)/ 
         ACCESSIONS.push $1
@@ -34,13 +126,11 @@ def read_and_highlight
         SEQUENCES[ACCESSIONS.size - 1] = (current || "") + line
       end
     end
+  end
+end
 
-    h_stdin.close
-    err = h_stderr.readlines
-    STDERR.puts err.join("\n") unless err.empty?
-  end  
-
-  File.open(TMP_SCORES_FILE) do |f|
+def load_highlights(file_id)
+  File.open(TMP_FILES[file_id]) do |f|
     first3 = (1..3).collect{f.gets.chomp}
   
     @consensus   = first3[0].split("\t")
@@ -52,9 +142,27 @@ def read_and_highlight
     end
   end
 
-  File.delete(TMP_SCORES_FILE)
-
 end
+
+def load_pfams(filename)
+  q, d, from, to = [nil, nil, nil, nil]
+ 
+  File.open("#{filename}") do |f|  
+    while line = f.gets
+      if line =~ /Query sequence: (.*)/
+        ## Query sequence: Q8Z540
+        q = $1
+      elsif line =~ /(.*): domain .* from ([0-9]*) to ([0-9]*):/  
+        ## PF00551.11: domain 1 of 1, from 184 to 361: score 72.5, E = 1.5e-18
+        d, from, to = [$1, $2.to_i, $3.to_i]
+        PFAMS[q] ||= []
+        PFAMS[q].push([d, from, to])
+      end
+    end
+  end
+end
+
+
 
 def load_template
   File.open(__FILE__) do |f|
@@ -69,68 +177,192 @@ def load_template
   end
 end
 
-def generate
-  longest = ACCESSIONS.inject(0){|result, element| [result, element.size].max}
-  TEMPLATE.each do |line|
 
-    if line =~ /%%SEQUENCE%%/
-      SEQUENCES.each_with_index do |s, i|
-        current = 0
-        s_tmp = []
-        s.split('').each_with_index do |c, i2|
-          if @memb_loci[current] == (i2 + 1)
-            html = c
-
-	    score = MEMB_SCORES[i][current]
-            if score >= 0
-              html = "<r0#{score}>#{html}</r0#{score}>"
-            elsif score >= 8
-              html = "<r08>#{html}</r08>"
-            end
-
-            cvalue = (@consvalues[current] * 10).to_i.to_s.rjust(2, '0')
-            html = "<b#{cvalue}>#{html}</b#{cvalue}>"
-
-
-            s_tmp.push html
-            current += 1
-          else
-            s_tmp.push c
-          end
-        end
-        html = "<ac>#{ACCESSIONS[i].ljust(longest)}</ac> #{s_tmp.join('')}"
-        puts line.sub('%%SEQUENCE%%', html)
+def identify_visible_pfams
+  PFAMS.each_pair do |seq_accession, pfam|
+    if ACCESSIONS.include? seq_accession
+      pfam.each do |triplet|
+        d, form, to = triplet
+        VISIBLE_PFAMS[d] = true
       end
-
-    elsif line =~ /%%CONSENSUS%%/
-      consensus = []
-      current = 0
-      1.upto(SEQUENCES.first.size) do |i|
-        if @memb_loci[current] == i
-          cvalue = (@consvalues[current] * 10).to_i.to_s.rjust(2, '0')
-          html = "<b#{cvalue}>#{@consensus[current]}</b#{cvalue}>"
-          consensus.push html
-          current += 1
-        else
-          consensus.push '-'
-        end 
-      end
-
-      html = "<ac>#{'Consensus:'.ljust(longest)}</ac> #{consensus.join('')}"
-      line.gsub!('%%CONSENSUS%%', html)
-      puts line
-    else
-      line.gsub!('%%TIME%%', Time.now.to_s)
-      puts line
     end
   end
 end
 
+def generate(outfile)
+  def pick_icon(pfam_name)
+    # Chooses one out of 245 icons (i000..i244)
+    n = (0...(pfam_name.size)).inject(0){|s, i| s + pfam_name[i] * 10^i} % 245
+    return n.to_s.rjust(3, '0')
+  end
+
+  longest = ACCESSIONS.inject(0){|result, element| [result, element.size].max}
+
+  File.open(outfile, 'w') do |f|
+    TEMPLATE.each do |line|
+
+      if line =~ /%%SEQUENCE%%/
+        SEQUENCES.each_with_index do |s, seq_id|
+          accession = ACCESSIONS[seq_id]
+
+          pfams = (PFAMS[accession]||[])
+
+          pfam_start_poss   = pfams.collect{|i| i[1]}
+          pfam_stop_poss    = pfams.collect{|i| i[2]}
+          current_start_pos = nil
+
+          current_memb = 0
+          nogap_pos    = 0
+          s_tmp        = []
+          icon_id      = nil
+
+          s.split('').each_with_index do |c, pos|
+            nogap_pos += 1 unless c == '-'
+            html = c
+
+            if @memb_loci[current_memb] == (pos + 1)
+
+              score = MEMB_SCORES[seq_id][current_memb]
+              if score >= 0
+                html = "<r0#{score}>#{html}</r0#{score}>"
+              elsif score >= 8
+                html = "<r08>#{html}</r08>"
+              end
+
+              cvalue = (@consvalues[current_memb] * 10).to_i.to_s.rjust(2, '0')
+              html = "<b#{cvalue}>#{html}</b#{cvalue}>"
+
+              current_memb += 1
+            end
+
+            if pfam_start_poss.include?(nogap_pos) and current_start_pos.nil?
+              matches = pfams.select {|i| true if (i[1] == nogap_pos)}
+              if !matches.empty?
+                current_start_pos = nogap_pos
+                icon_id = pick_icon(matches.first.first)
+
+                html = "<i#{icon_id}>#{html}"
+              end
+            end
+
+            if pfam_stop_poss.include?(nogap_pos)
+              matches = pfams.select do |i|
+                true if (i[1] == current_start_pos and i[2] == nogap_pos)
+              end
+
+              if !matches.empty?
+                html = "#{html}</i#{icon_id}>" 
+                current_start_pos = nil
+              end
+            end
+
+            s_tmp.push html
+          end
+
+          html = "<ac>#{accession.ljust(longest)}</ac> #{s_tmp.join('')}"
+          f.puts line.sub('%%SEQUENCE%%', html)
+        end
+
+      elsif line =~ /%%CONSENSUS%%/
+        consensus = []
+        current = 0
+        1.upto(SEQUENCES.first.size) do |i|
+          if @memb_loci[current] == i
+            cvalue = (@consvalues[current] * 10).to_i.to_s.rjust(2, '0')
+            html = "<b#{cvalue}>#{@consensus[current]}</b#{cvalue}>"
+            consensus.push html
+            current += 1
+          else
+            consensus.push '-'
+          end 
+        end
+
+        html = "<ac>#{'Consensus:'.ljust(longest)}</ac> #{consensus.join('')}"
+        line.gsub!('%%CONSENSUS%%', html)
+        f.puts line
+      else
+        line.gsub!('%%TITLE%%',
+                   "Alignment (#{ACCESSIONS.size})")
+
+        line.gsub!('%%VISIBLE_PFAMS%%',
+                   VISIBLE_PFAMS.keys.collect{|p| pick_icon(p)}.join(','))
+
+        line.gsub!('%%PFAMS_LEGEND%%',
+                   VISIBLE_PFAMS.keys.collect do |p|
+                     ico = "i#{pick_icon(p)}"
+                     "<#{ico}>&nbsp;&nbsp;</#{ico}> #{p}"
+                   end.join('<br />'))
+
+        if VISIBLE_PFAMS.empty?
+          line.gsub!('%%PFAMBOX_STYLE%%', 'visibility: hidden')
+        else
+          line.gsub!('%%PFAMBOX_STYLE%%', '')
+        end
+
+        line.gsub!('%%TIME%%', Time.now.to_s)
+        f.puts line
+      end
+    end
+  end
+end
+
+def mk_symlinks_to_static_content
+  `#{LN} -sfT #{SRC_DIR}/javascript   #{WORK_DIR}/javascript  2> /dev/null`
+  `#{LN} -sfT #{SRC_DIR}/stylesheets  #{WORK_DIR}/stylesheets 2> /dev/null`
+  `#{LN} -sfT #{SRC_DIR}/icons        #{WORK_DIR}/icons       2> /dev/null`
+end
+
+#
+# Prepare
+#
+
+load_parameters()
+generate_uniq_names()
+
+FASTA_FILES.each_with_index do |fastafile, fastafile_id|
+  TMP_FILES[fastafile_id] = 
+    "#{TMP_DIR}/#{TMP_PREFIX}-#{UNIQ_NAMES[fastafile_id]}"
+end
 
 
-read_and_highlight
-load_template
-generate
+#
+# Run the highlight-regions.R script
+#
+
+highlight_all()
+
+
+#
+# Do everithing else
+#
+
+load_pfams(@pfam_file) if @pfam_file != nil
+
+FASTA_FILES.each_with_index do |fastafile, fastafile_id|
+  load_fastafile(fastafile_id)
+  load_highlights(fastafile_id)
+  load_template()
+
+  identify_visible_pfams()
+
+  generate("#{WORK_DIR}/#{File.basename(fastafile)}.html")
+
+  mk_symlinks_to_static_content()
+
+  File.delete(TMP_FILES[fastafile_id]) # Cleanup temporary files
+
+  ACCESSIONS.delete_if  {true}
+  SEQUENCES.delete_if   {true}
+  TEMPLATE.delete_if    {true}
+  MEMB_SCORES.delete_if {true}
+  
+  @consensus  = nil
+  @consvalues = nil
+  @memb_loci  = nil
+  
+  VISIBLE_PFAMS.delete_if{true}
+end
+
 
 
 
@@ -140,22 +372,20 @@ generate
 ## 
 ## <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 ## <head>
-## <title>clustalw-to-html</title>
+## <title>%%TITLE%%</title>
+##
+## <link rel="stylesheet" type="text/css"
+##   id="blosums" 
+##   href="stylesheets/blosums.css" />
 ## 
+## <link rel="stylesheet" type="text/css"
+##   id="pfams" 
+##   href="stylesheets/none.css" />
+##
 ## <style type="text/css">
 ## div { letter-spacing: 1px; white-space: pre; font-family: monospace }
 ## div { padding-top: 0.3em }
 ## ac  { letter-spacing: 0px }
-##
-## r08 { background-color: #ff0000 }
-## r07 { background-color: #ff6b44 }
-## r06 { background-color: #ff925c }
-## r05 { background-color: #ffb677 }
-## r04 { background-color: #ffc380 }
-## r03 { background-color: #ffd796 }
-## r02 { background-color: #ffe6a8 }
-## r01 { background-color: #fff2ba }
-## r00 { background-color: #fffcd4 }
 ##
 ## b10 { border: #000 solid 3px; border-top: none;  }
 ## b09 { border: #555 solid 2px; border-top: none;  }
@@ -171,15 +401,52 @@ generate
 ## b10, b09, b08, b07, b06, b05, b04, b03, b02, b01 {
 ##   letter-spacing: 0px; margin-right: 5px; margin-top: 5px
 ## }
+## 
+## .seq, .cons {
+##   margin-left: 2em;
+## }
+##
+## .round {
+##   -moz-border-radius: 5px;
+##   -webkit-border-radius: 5px;
+## }
 ##
 ## .cons { padding-top: 0.7em }
+## 
+## .toolbox, .legend {
+##   position: fixed; right: 20px; top: 20px;
+##   letter-spacing: 0px; white-space: normal;
+##   background-color: #9DD3FB; padding: 0.5em;
+##   border: 1px solid #999999;
+## }
+##
+## .legend {
+##   background-color: white;
+##   right: auto; left: 20px;
+## }
 ## </style>
 ## 
-## </head>
-## <body>
+## <script type="text/javascript" src="javascript/pad.js"></script>
+## <script type="text/javascript" src="javascript/toolbox.js"></script>
 ## 
-## <h2>Legend</h2>
-## <div><ac>BLOSUM62 scores: <r08
+## 
+## </head>
+##
+##
+## <body onload="uncheck_show_pfams_checkbox();">
+##
+## <div class="toolbox round" style="%%PFAMBOX_STYLE%%">
+##   <form action="" method="post">
+##   <input type="checkbox" name="show_pfams" id="show_pfams"
+##     disabled="disabled"
+##     onchange="look_at_toolbox_and_update()" />
+##
+##   <label for="show_pfams" style="padding-top: 0.5em; padding-bottom: 0.5em"
+##   >Show Pfam domains</label>
+##   </form>
+## </div>
+## 
+## <div id="blosums_legend" class="legend round"><ac>BLOSUM62 Scores: <r08
 ## >&nbsp;8 and more&nbsp;</r08><r07
 ## >&nbsp;7&nbsp;</r07><r06
 ## >&nbsp;6&nbsp;</r06><r05
@@ -188,26 +455,31 @@ generate
 ## >&nbsp;3&nbsp;</r03><r02
 ## >&nbsp;2&nbsp;</r02><r01
 ## >&nbsp;1&nbsp;</r01
-## >&nbsp;0&nbsp;-1&nbsp;-2&nbsp;-3&nbsp;-4</ac></div>
+## >&nbsp;0&nbsp;-1&nbsp;-2&nbsp;-3&nbsp;-4&nbsp;</ac></div>
 ##
-## <div><ac>consensus levels: </ac><b10
-## >&nbsp;1.0&nbsp;</b10><b09
-## >&nbsp;0.9&nbsp;</b09><b08
-## >&nbsp;0.8&nbsp;</b08><b07
-## >&nbsp;0.7&nbsp;</b07><b06
-## >&nbsp;0.6&nbsp;</b06><b05
-## >&nbsp;0.5&nbsp;</b05><b04
-## >&nbsp;0.4&nbsp;</b04><b03
-## >&nbsp;0.3&nbsp;</b03><b02
-## >&nbsp;0.2&nbsp;</b02><b01
-## >&nbsp;0.1&nbsp;</b01></div>
+## <div id="pfams_legend" class="legend round" style="visibility: hidden">
+## <ac>%%PFAMS_LEGEND%%</ac>
+## </div>
+##
+## <div class="legend round" style="top: auto; border-color: green; bottom: 20px"
+## ><ac>Consensus Strength: </ac><b10
+## >&nbsp;1&nbsp;</b10><b09
+## >&nbsp;.9&nbsp;</b09><b08
+## >&nbsp;.8&nbsp;</b08><b07
+## >&nbsp;.7&nbsp;</b07><b06
+## >&nbsp;.6&nbsp;</b06><b05
+## >&nbsp;.5&nbsp;</b05><b04
+## >&nbsp;.4&nbsp;</b04><b03
+## >&nbsp;.3&nbsp;</b03><b02
+## >&nbsp;.2&nbsp;</b02><b01
+## >&nbsp;.1&nbsp;</b01></div>
 ## <p style="margin-top: 2em;"></p>
 ##
-## <h2>Alignment</h2>
+## <h2 style="margin-top: 7em;">Alignment</h2>
 ## <div class="seq">%%SEQUENCE%%</div>
 ## <div class="cons">%%CONSENSUS%%</div> 
 ##
-## <p style="margin-top: 3em;">
+## <p style="margin-bottom: 7em; margin-top: 3em">
 ## Generated on %%TIME%% by
 ## <a href="http://github.com/alevchuk/clustalw-to-html/">clustalw-to-html</a> 
 ## </p>

@@ -1,0 +1,47 @@
+= Requirements =
+
+  Only Ruby and R (with Biostrings package) are required.
+
+  The software was tested with the following versions:
+   * Ruby 1.8.5
+   * R 2.9.0
+   * Biostrings 2.12.1
+
+  Note: Other versions are likely to work as well
+
+  To install Biostrings open the R session (just run "R") are run:
+    source("http://bioconductor.org/biocLite.R")
+    biocLite("Biostrings")
+
+
+
+= Installation =
+
+  1. Move the entire clustalw-to-html-0.9 directory where it's readable by all:
+    cd ..
+    sudo mv clustalw-to-html-0.9 /opt/clustalw-to-html-0.9
+    sudo chmod -R o+r            /opt/clustalw-to-html-0.9
+    sudo chmod +x                /opt/clustalw-to-html-0.9/highlight-regions.R
+    sudo chmod +x              /opt/clustalw-to-html-0.9/filter-hmmpfam-output
+    sudo chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-fasta
+    sudo chmod +x                /opt/clustalw-to-html-0.9/fasta-to-html
+    sudo chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-html
+
+  2. Make symbolic links to /usr/local/bin where it is in the PATH of everyone:
+    sudo ln -s /opt/clustalw-to-html-0.9/clustalw-to-fasta /usr/local/bin/
+    sudo ln -s /opt/clustalw-to-html-0.9/fasta-to-html     /usr/local/bin/
+    sudo ln -s /opt/clustalw-to-html-0.9/clustalw-to-html  /usr/local/bin/
+    sudo ln -s /opt/clustalw-to-html-0.9/filter-hmmpfam-output /usr/local/bin/
+
+
+
+= Run tests =
+
+  mkdir ~/tmp-clustalw-to-html-test
+  cd ~/tmp-clustalw-to-html-test
+  /opt/clustalw-to-html-0.9/housekeeping/run-tests
+
+  # You should see no errors and some nice HTML files
+
+  rm -rf ~/tmp-clustalw-to-html-test
+
