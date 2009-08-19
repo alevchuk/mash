@@ -24,9 +24,11 @@ WORK_DIR = ENV["PWD"]
 
 # Executables
 HIGHLIGHT_REGIONS = "#{SRC_DIR}/highlight-regions.R"
+FILTER_HMMPFAM = "#{SRC_DIR}/filter-hmmpfam-output"
 MKDIR  = "/bin/mkdir"
 WHOAMI = "/usr/bin/whoami"
 LN     = "/bin/ln"
+CAT    = "/bin/cat"
 
 # Global Variables
 ACCESSIONS = []
@@ -147,7 +149,7 @@ end
 def load_pfams(filename)
   q, d, from, to = [nil, nil, nil, nil]
  
-  File.open("#{filename}") do |f|  
+  IO.popen("#{CAT} #{filename} | #{FILTER_HMMPFAM}") do |f|  
     while line = f.gets
       if line =~ /Query sequence: (.*)/
         ## Query sequence: Q8Z540
