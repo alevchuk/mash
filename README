@@ -16,6 +16,10 @@ RELATED WORK:
   T-Coffee
     http://www.tcoffee.org/Projects_home_page/m_coffee_home_page.html#OUTPUT
 
-    Highlights well-conserved residues, but in T-Coffee the HTML generator
-    is coupled with the internal datastrucures used when making the actual 
-    multiple alignment so it cannot be used separately.
+    Highlights well-conserved residues.
+
+    In T-Coffee the HTML generator is coupled with the internal data-strucures
+    used generating the alignments.
+
+    Alignment tools that T-Coffee calls (e.g. clustalw) become subject to
+    the limits of T-Coffee (e.g. No Alignment of more than 1000 sequences).
