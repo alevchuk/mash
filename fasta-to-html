@@ -54,7 +54,7 @@ TMP_DIR    = "/tmp/clustalw-to-html-#{USERNAME}"
 TMP_PREFIX = "#{Time.now.to_f}.#{(rand*10).to_i}"
 `#{MKDIR} -p #{TMP_DIR}`
 
-
+SUPPORTED_ARGS = ['--all-in-one']
 
 def load_parameters
   def usage
@@ -82,7 +82,7 @@ Usage: #{SRC_NAME} [--pfams <pfamfile>] <fastafile> [<fastafile>]...
   end
 
   ARGV.each do |i|
-    if i =~ /^-/
+    if i =~ /^-/ and !SUPPORTED_ARGS.include?(i)
       STDERR.puts "WARNING: Unknown argument #{i}"
     else
       FASTA_FILES.push(i)
@@ -158,7 +158,7 @@ def load_pfams(filename)
         ## PF00551.11: domain 1 of 1, from 184 to 361: score 72.5, E = 1.5e-18
         d, from, to = [$1, $2.to_i, $3.to_i]
         PFAMS[q] ||= []
-        PFAMS[q].push([d, from, to])
+        PFAMS[q].push([d, from..to])
       end
     end
   end
@@ -180,12 +180,35 @@ def load_template
 end
 
 
+def remove_overlaps(pfams)
+  overlapped_domains = 0
+  pfams.each_pair do |key, val|
+    overlaps = []
+ 
+    sorted_by_start = val.sort{|l,r| l[1].first <=> r[1].first}
+
+    prev = sorted_by_start[0]
+    sorted_by_start[1..-1].each do |dom|
+      if prev[1].include? dom[1].first
+        overlaps.push dom
+      else
+        prev = dom
+      end
+    end
+ 
+    #puts "OVERLAPS: #{overlaps.inspect}" unless overlaps.empty?
+ 
+    overlaps.each {|o| overlapped_domains += 1; val.delete o}
+  end
+end
+
+
 def identify_visible_pfams
   PFAMS.each_pair do |seq_accession, pfam|
     if ACCESSIONS.include? seq_accession
       pfam.each do |triplet|
-        d, form, to = triplet
-        VISIBLE_PFAMS[d] = true
+        domain, positions = triplet
+        VISIBLE_PFAMS[domain] = true
       end
     end
   end
@@ -209,8 +232,8 @@ def generate(outfile)
 
           pfams = (PFAMS[accession]||[])
 
-          pfam_start_poss   = pfams.collect{|i| i[1]}
-          pfam_stop_poss    = pfams.collect{|i| i[2]}
+          pfam_start_poss   = pfams.collect{|i| i[1].first}
+          pfam_stop_poss    = pfams.collect{|i| i[1].last}
           current_start_pos = nil
 
           current_memb = 0
@@ -238,7 +261,7 @@ def generate(outfile)
             end
 
             if pfam_start_poss.include?(nogap_pos) and current_start_pos.nil?
-              matches = pfams.select {|i| true if (i[1] == nogap_pos)}
+              matches = pfams.select {|i| true if (i[1].first == nogap_pos)}
               if !matches.empty?
                 current_start_pos = nogap_pos
                 icon_id = pick_icon(matches.first.first)
@@ -249,7 +272,7 @@ def generate(outfile)
 
             if pfam_stop_poss.include?(nogap_pos)
               matches = pfams.select do |i|
-                true if (i[1] == current_start_pos and i[2] == nogap_pos)
+                true if (i[1] == current_start_pos..nogap_pos)
               end
 
               if !matches.empty?
@@ -339,6 +362,7 @@ highlight_all()
 #
 
 load_pfams(@pfam_file) if @pfam_file != nil
+remove_overlaps(PFAMS)
 
 FASTA_FILES.each_with_index do |fastafile, fastafile_id|
   load_fastafile(fastafile_id)
@@ -366,6 +390,12 @@ FASTA_FILES.each_with_index do |fastafile, fastafile_id|
 end
 
 
+# Fuse
+if ARGV.include? "--all-in-one"
+  FASTA_FILES.each_with_index do |fastafile, fastafile_id|
+    puts "#{WORK_DIR}/#{File.basename(fastafile)}.html"
+  end
+end
 
 
 # %%TEMPLATE%%
@@ -477,9 +507,11 @@ end
 ## >&nbsp;.1&nbsp;</b01></div>
 ## <p style="margin-top: 2em;"></p>
 ##
+## <!-- %%ALIGNMENT_BEGIN%% -->
 ## <h2 style="margin-top: 7em;">Alignment</h2>
 ## <div class="seq">%%SEQUENCE%%</div>
 ## <div class="cons">%%CONSENSUS%%</div> 
+## <!-- %%ALIGNMENT_END%% -->
 ##
 ## <p style="margin-bottom: 7em; margin-top: 3em">
 ## Generated on %%TIME%% by
