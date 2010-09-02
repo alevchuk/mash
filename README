@@ -1,25 +1,50 @@
-The command clustalw-to-html visualizes multiple sequence alignments
+Multiple Sequence Alignment Viewer
 
-INPUT:  ClustalW  - a standard format for storing multiple sequence alignments
-OUTPUT: HTML page - a human readable representation
+USAGE:
+  savvy <msa>
 
+INPUT:
+  ClustalW  - a standard format for storing multiple sequence alignments
+  FASTA     - with "-" representing gaps, all items should have the same length
+
+OUTPUT: 
+  HTML file (contains sequences)
+  JSON files (contains highlighting info)
+
+
+REQUIREMENTS:
+  All code will be re-written in R.
+  Output is viewed in a web browser (with JavaScript enabled).
+ 
 
 RELATED WORK:
 
   MView
-    http://bioweb2.pasteur.fr/docs/mview/
+    Source: http://bioweb2.pasteur.fr/docs/mview/
 
-    Can only highlight residues based on their Physico-Chemical Properties.
-    Cannot highlight well-conserved residues or Pfam domains.
-
+    """
+    MView is a tool for converting the results of a sequence database search
+    into the form of a coloured multiple alignment of hits stacked against the
+    query. Alternatively, an existing multiple alignment can be processed.
+    """
+    * Can only highlight residues based on their Physico-Chemical Properties.
 
   T-Coffee
-    http://www.tcoffee.org/Projects_home_page/m_coffee_home_page.html#OUTPUT
+    Source: http://www.tcoffee.org/Projects_home_page/m_coffee_home_page.html
 
-    Highlights well-conserved residues.
+    """T-Coffee is a multiple sequence alignment package."""
+    * Highlights well-conserved residues.
+    * In T-Coffee the HTML generator is coupled with the internal
+      data-structures used generating the alignments.
 
-    In T-Coffee the HTML generator is coupled with the internal data-strucures
-    used generating the alignments.
+  Belvu
+    Source: http://sonnhammer.sbc.su.se/Belvu.html
 
-    Alignment tools that T-Coffee calls (e.g. clustalw) become subject to
-    the limits of T-Coffee (e.g. No Alignment of more than 1000 sequences).
+    """Belvu is an X-windows viewer for multiple sequence alignments."""
+    * Highlights well-conserved columns/residues.  
+
+  Jalview
+    Source: http://www.jalview.org/
+
+    """Jalview is a multiple alignment editor written in Java."""
+
