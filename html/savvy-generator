@@ -19,12 +19,13 @@ make_html_seqs <- function(seqs_info, msa){
        return(o)
 }
 
-applyTemplate <- function(html_seqs, title) {
+applyTemplate <- function(html_seqs, title=title, json=json) {
         lines <- readLines(
           paste(script.dir, "/savvy.template.html", sep=""))
 
         lines <- lapply(lines, function(l){sub("%%SEQUENCES%%", html_seqs, l)})
         lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
+        lines <- lapply(lines, function(l){sub("%%JSON_FILE%%", json, l)})
         lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", Sys.time(), l)})
 
         lines <- paste(lines, sep = "", collapse="\n")
@@ -72,6 +73,7 @@ html_seqs  <- make_html_seqs(fasta$seqs_info, fasta$msa)
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
 
 
-
-cat(applyTemplate(html_chunk, title=file.fasta), "\n")
+j_list <- strsplit(file.json, '/')[[1]]
+j      <- j_list[[length(j_list)]]
+cat(applyTemplate(html_chunk, title=file.fasta, json=j), "\n")
 
