@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script> -->
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <style type="text/css">
+    b  { font-weight: normal}
+    .s { letter-spacing: 1px; white-space: pre; font-family: monospace }
+  </style>
+  <title>Savvy - %%TITLE%%</title>
+</head>
+<body>
+
+%%SEQUENCES%%
+
+<p>
+  Generated on %%GEN_DATE%% by <a href="http://github.com/alevchuk/savvy/">Savvy</a><br />
+  <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
+    >Valid HTML5</a><br />
+  <a href="http://jigsaw.w3.org/css-validator/check/referer"
+    >Valid CSS</a>
+</p>
+
+
+
+<script>
+$.getJSON('test.json', function(data) {
+
+  $.each(data.colors, function(k1, c) {
+    $.each(c.positions, function(k2, p) {
+      var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
+      residue.css('color', c.color[0]);
+      residue.css('background-color', c.color[1]);
+    });
+  });
+
+
+});
+</script>
+
+</body>
+</html>
+
