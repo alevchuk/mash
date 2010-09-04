@@ -3,10 +3,11 @@
 library(seqinr) # for read.fasta
 
 
-importFasta <- function() {
-        fasta <- read.fasta(file.fasta, seqtype = "AA")
+importFasta <- function(filename.fasta=filename.fasta) {
+        fasta <- read.fasta(filename.fasta, seqtype = "AA")
         seqs_info <- data.frame(id=1:length(fasta), headers=names(fasta))
         msa <- sapply(fasta, function(i){as.character(i)})
+        attributes(msa) <- list(dim=attr(msa, 'dim')) # All I need is dim
         return(list(seqs_info=seqs_info, msa=msa))
 }
 
@@ -67,7 +68,7 @@ file.json  <- script.args[[2]]
 
 
 
-fasta <- importFasta()
+fasta <- importFasta(filename.fasta=file.fasta)
 
 html_seqs  <- make_html_seqs(fasta$seqs_info, fasta$msa)
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
