@@ -4,17 +4,25 @@ USAGE:
   savvy <msa>
 
 INPUT:
-  ClustalW  - a standard format for storing multiple sequence alignments
-  FASTA     - with "-" representing gaps, all items should have the same length
+  ClustalW  - a standard format for storing multiple sequence alignments.
+  FASTA     - all sequences should have the same length. "-" represents a gap.
 
 OUTPUT: 
-  HTML file (contains sequences)
-  JSON files (contains highlighting info)
+  HTML file    - contains sequences
+  JSON file(s) - contain(s) highlighting info
 
 
 REQUIREMENTS:
   All code will be re-written in R.
   Output is viewed in a web browser (with JavaScript enabled).
+
+
+FEATURES:
+  * Displays MSAs in HTML.
+  * Integrates with many scoring methods.
+  * Has a very compact HTML encoding (<b> tag). Only 8 characters per residue.
+  * Switches between multiple scoring methods quickly (no need to reload page).
+
 
 RELATED WORK:
 
@@ -27,6 +35,7 @@ RELATED WORK:
     query. Alternatively, an existing multiple alignment can be processed.
     """
     * Can only highlight residues based on their Physico-Chemical Properties.
+    * Uses <FONT> tags (in worst case 29 characters per residue)
 
   T-Coffee
     Source: http://www.tcoffee.org/Projects_home_page/m_coffee_home_page.html
@@ -35,6 +44,19 @@ RELATED WORK:
     * Highlights well-conserved residues.
     * In T-Coffee the HTML generator is coupled with the internal
       data-structures used generating the alignments.
+    * Uses <span> tags (in worst case 26 characters per residue)
+
+  GUIDANCE
+    Source: http://guidance.tau.ac.il/
+
+    """guide-tree based alignment confidence"""
+    * Does MSA alignment (MAFFT, PRANK, or ClwstalW)
+    * Offers scring with 2 methods: Guidance, and Heads-or-Tails
+    * Highlights in HTML according to score
+    * Uses <table> HTML construct (20 characters per residue)
+
+
+RELATED WORK (non-HTML):
 
   Belvu
     Source: http://sonnhammer.sbc.su.se/Belvu.html
