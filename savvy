@@ -1,0 +1,64 @@
+#!/usr/bin/env Rscript
+
+library(seqinr) # for read.fasta
+
+
+importFasta <- function(filename.fasta=filename.fasta) {
+        fasta <- read.fasta(filename.fasta, seqtype = "AA")
+        seqs_info <- data.frame(id=1:length(fasta), headers=names(fasta))
+        msa <- sapply(fasta, function(i){as.character(i)})
+        attributes(msa) <- list(dim=attr(msa, 'dim')) # All I need is dim
+        return(list(seqs_info=seqs_info, msa=msa))
+}
+
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "",
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+script.dir  <- paste(script.dir.list, sep='/', collapse='/')
+script.name <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) != 1) {
+       cat(paste("Usage:", script.name, "<file.fasta>", "\n\n"))
+       cat(paste("Required Options", "\n\n"))
+       cat(paste(
+         "  <file.fasta> is the multiple sequence alignment (msa)", "\n"))
+       quit()
+}
+
+
+
+filename.fasta <- script.args[[1]]
+
+fasta <- importFasta(filename.fasta)
+
+
+plugins.dir <-  paste(c(script.dir, "plugins"), sep='/', collapse='/')
+plugins     <- dir(plugins.dir, full.names=T)
+
+# Filter out typical backup files
+plugins <- plugins[grep("~$", plugins, invert=T)]
+
+## TODO: Get plugin name and use that for filtering
+#plugins <- plugins[grep("^.", plugins, invert=T)]
+
+
+# This is all what the plugins (scoring methods) will need
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+msa                     <- fasta$msa
+output.filename.prefix  <- filename.fasta
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+results <- lapply(plugins, function(i) {
+       source(i)  
+})
