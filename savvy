@@ -1,64 +1,40 @@
-#!/usr/bin/env Rscript
+#!/bin/sh
 
-library(seqinr) # for read.fasta
+set -e
 
+SRC_DIR=`dirname $0`
+PLUGINS=$SRC_DIR/plugins/*.savvy
 
-importFasta <- function(filename.fasta=filename.fasta) {
-        fasta <- read.fasta(filename.fasta, seqtype = "AA")
-        seqs_info <- data.frame(id=1:length(fasta), headers=names(fasta))
-        msa <- sapply(fasta, function(i){as.character(i)})
-        attributes(msa) <- list(dim=attr(msa, 'dim')) # All I need is dim
-        return(list(seqs_info=seqs_info, msa=msa))
-}
+# Keep only the executable Plugins
+PLUGINS=`for i in $PLUGINS; do if [ -x $i ]; then echo $i; fi; done`
 
 
-initial.options <- commandArgs()
-file.arg.name <- "--file="
+IMPORT=$SRC_DIR/savvy-import-fasta
+GENERATE=$SRC_DIR/savvy-generate-html
 
-script.path <- sub(file.arg.name, "",
-  initial.options[grep(file.arg.name, initial.options)])
+if [ $# != 1 ]; then
+  echo "Usage: `basename $0` <fasta_file> [plugin options] [display options]"
+  exit 1
+fi
 
-script.path.list <- strsplit(script.path, '/')[[1]]
-script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+FASTA=$1
 
-script.dir  <- paste(script.dir.list, sep='/', collapse='/')
-script.name <- script.path.list[[length(script.path.list)]]
-
-
-
-script.args <- commandArgs(trailingOnly=T)
-
-if(length(script.args) != 1) {
-       cat(paste("Usage:", script.name, "<file.fasta>", "\n\n"))
-       cat(paste("Required Options", "\n\n"))
-       cat(paste(
-         "  <file.fasta> is the multiple sequence alignment (msa)", "\n"))
-       quit()
-}
+# TODO: Parse Plugin and Display options
+PLUGIN_OPTIONS=""
+DISPLAY_OPTIONS=""
 
 
-
-filename.fasta <- script.args[[1]]
-
-fasta <- importFasta(filename.fasta)
+# Run savvy-import-fasta
+$IMPORT $FASTA ${FASTA}_msa.json ${FASTA}_headers.json
 
 
-plugins.dir <-  paste(c(script.dir, "plugins"), sep='/', collapse='/')
-plugins     <- dir(plugins.dir, full.names=T)
-
-# Filter out typical backup files
-plugins <- plugins[grep("~$", plugins, invert=T)]
-
-## TODO: Get plugin name and use that for filtering
-#plugins <- plugins[grep("^.", plugins, invert=T)]
+# Run savvy-generate-html
+all_plugins=`for i in $PLUGINS; do echo -n "-p $i "; done; echo`
+$GENERATE ${FASTA} > ${FASTA}_savvy.html
 
 
-# This is all what the plugins (scoring methods) will need
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-msa                     <- fasta$msa
-output.filename.prefix  <- filename.fasta
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-results <- lapply(plugins, function(i) {
-       source(i)  
-})
+# Run all Plugins
+for plugin in $PLUGINS; do
+  p_name=`basename $plugin`
+  $plugin ${FASTA}_msa.json > ${FASTA}_${p_name}_savvy.json
+done

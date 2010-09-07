@@ -1,19 +1,20 @@
 Multiple Sequence Alignment Viewer
 
-USAGE:
-  savvy <msa>
-
 INPUT:
   ClustalW  - a standard format for storing multiple sequence alignments.
   FASTA     - all sequences should have the same length. "-" represents a gap.
 
 OUTPUT: 
-  HTML file    - contains sequences
-  JSON file(s) - contain(s) highlighting info
+  HTML file    - contains sequences.
+  JSON file(s) - highlighting info for 1 or more scoring methods.
 
 
 REQUIREMENTS:
   All code will be re-written in R.
+  Mandatory R libraries:
+    * seqinr
+    * rjson
+
   Output is viewed in a web browser (with JavaScript enabled).
 
 
@@ -44,16 +45,16 @@ RELATED WORK:
     * Highlights well-conserved residues.
     * In T-Coffee the HTML generator is coupled with the internal
       data-structures used generating the alignments.
-    * Uses <span> tags (in worst case 26 characters per residue)
+    * Uses <span> tags (in worst case 26 characters per residue).
 
   GUIDANCE
     Source: http://guidance.tau.ac.il/
 
     """guide-tree based alignment confidence"""
-    * Does MSA alignment (MAFFT, PRANK, or ClwstalW)
-    * Offers scring with 2 methods: Guidance, and Heads-or-Tails
-    * Highlights in HTML according to score
-    * Uses <table> HTML construct (20 characters per residue)
+    * Does MSA alignment (MAFFT, PRANK, or ClwstalW).
+    * Offers scring with 2 methods: Guidance, and Heads-or-Tails.
+    * Highlights in HTML according to score.
+    * Uses <table> HTML construct (20 characters per residue).
 
 
 RELATED WORK (non-HTML):

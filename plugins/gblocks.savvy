@@ -1,0 +1,75 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+
+script_path <- sub("--file=","", commandArgs()[grep("--file=", commandArgs())])
+script_path_list <- strsplit(script_path, '/')[[1]]
+script_name <- script_path_list[[length(script_path_list)]]
+
+script_args <- commandArgs(trailingOnly=T)
+if(length(script_args) != 1) {
+       cat(paste("Usage:", script_name, "<in_msa.json>", "\n\n"))
+       cat(paste(
+         "Required Arguments",
+         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.", 
+         "\n",
+         sep="\n"))
+       quit()
+}
+
+msa_json_file <- script_args[[1]]
+msa <- fromJSON(readLines(msa_json_file))
+
+# Convert to matrix
+num_sequences <- length(msa)
+msa <- paste(msa, sep="", collapse="")
+msa <- strsplit(msa, "")[[1]]
+msa <- matrix(msa, nrow=num_sequences, byrow=T)
+
+
+# Default Gblocks Threasholds
+#IS_ratio <- 0.50
+#FS_ratio <- 0.85
+IS_ratio <- 0.50
+FS_ratio <- 0.85
+
+IS  <- num_sequences * IS_ratio + 1
+FS  <- num_sequences * FS_ratio
+CP  <- 8
+BL1 <- 15
+BL2 <- 10
+
+step1 <- function(col) {
+  num_identical <- max(table(col))
+
+
+  if (num_identical < IS || any(col == '-')) {
+    return("nonconserved")
+  }
+  else if (num_identical < FS) {
+    return("conserved")
+  }
+  else {
+    return("highly conserved")
+  }
+  
+}
+
+step1 <- apply(msa, 2, step1)
+
+get_pos <- function(type) {
+  f1 <- function(i) { lapply(1:num_sequences, function(row){list(row, i, i)}) }
+  unlist(recursive=F, lapply(which(step1 == type), f1))
+}
+
+hc <- list(color=c("White", "#A02560"), positions=get_pos("highly conserved"))
+nc <- list(color=c("White", "#F07DAB"), positions=get_pos("conserved"))
+
+
+colors <- list(hc, nc)
+
+out <- list(type="msa-highlights", version="1", colors=colors)
+
+cat(toJSON(out))
+cat("\n")
+

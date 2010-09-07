@@ -1,0 +1,70 @@
+#!/usr/bin/env Rscript
+
+library(seqinr) # for read.fasta
+library(rjson)  # for read.fasta
+
+
+
+importFasta <- function(filename.fasta=filename.fasta) {
+        fasta <- read.fasta(filename.fasta, seqtype = "AA")
+
+        headers <- names(fasta)
+        msa     <- sapply(fasta, function(i){paste(i, sep="", collapse="")})
+
+        attributes(msa) <- list(dim=attr(msa, 'dim')) # All I need is dim
+
+        return(list(headers=headers, msa=msa))
+}
+
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "",
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+script.dir  <- paste(script.dir.list, sep='/', collapse='/')
+script.name <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) != 3) {
+       cat(paste("Usage:", script.name, 
+         "<in.fasta>",
+         "<out_msa.json>",
+         "<out_headers.json>",
+         "\n\n"))
+       cat(paste(
+         "Required Arguments",
+         "  <in>           Input multiple sequence alignment (msa) in FASTA.", 
+         "  <out_msa>      Output msa in JSON.", 
+         "  <out_headers>  Output descriptions of sequences in JSON.", 
+         "\n",
+         sep="\n"))
+       cat(paste(
+         "Optional Arguments",
+         "  <row1> <col1> <row2> <col2>",
+         "                 Rectangular area to be displayed.",
+         "\n",
+         sep="\n"))
+       quit()
+}
+
+
+
+in.fasta <- script.args[[1]]
+out.msa  <- script.args[[2]]
+out.headers <- script.args[[3]]
+
+fasta <- importFasta(in.fasta)
+write(toJSON(fasta$headers), file=out.headers)
+
+dimensions <- dim(fasta$msa)
+attributes(fasta$msa) <- NULL
+write(toJSON(fasta$msa), file=out.msa)
+

@@ -22,7 +22,7 @@ make_html_seqs <- function(seqs_info, msa){
 
 applyTemplate <- function(html_seqs, title=title, json=json) {
         lines <- readLines(
-          paste(script.dir, "/savvy.template.html", sep=""))
+          paste(script.dir, "/html/savvy.template.html", sep=""))
 
         lines <- lapply(lines, function(l){sub("%%SEQUENCES%%", html_seqs, l)})
         lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
@@ -51,19 +51,15 @@ script.name <- script.path.list[[length(script.path.list)]]
 
 script.args <- commandArgs(trailingOnly=T)
 
-if(length(script.args) != 2) {
-       cat(paste("Usage:", script.name, "<file.fasta> <file.json>", "\n\n"))
+if(length(script.args) != 1) {
+       cat(paste("Usage:", script.name, "<file.fasta>", "\n\n"))
        cat(paste("Required Options", "\n\n"))
        cat(paste(
          "  <file.fasta> is the multiple sequence alignment (msa)", "\n"))
-       cat(paste(
-         "  <file.json>  describes colors and positions for highlighting",
-         "\n"))
        quit()
 }
 
 file.fasta <- script.args[[1]]
-file.json  <- script.args[[2]]
 
 
 
@@ -73,8 +69,6 @@ fasta <- importFasta(filename.fasta=file.fasta)
 html_seqs  <- make_html_seqs(fasta$seqs_info, fasta$msa)
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
 
-
-j_list <- strsplit(file.json, '/')[[1]]
-j      <- j_list[[length(j_list)]]
+# TODO: This read all the -p options
+j <- paste("../", file.fasta, "_gblocks.savvy_savvy.json", sep = "", collapse="")
 cat(applyTemplate(html_chunk, title=file.fasta, json=j), "\n")
-
