@@ -1,0 +1,83 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+library(seqinr)
+
+script_path <- sub("--file=","", commandArgs()[grep("--file=", commandArgs())])
+script_path_list <- strsplit(script_path, '/')[[1]]
+script_name <- script_path_list[[length(script_path_list)]]
+
+# Normally plugins don't need this because they should not have dependencies
+script_dir_list  <- script_path_list[1:(length(script_path_list)-1)]
+script_dir  <- paste(script_dir_list, sep='/', collapse="/")
+gblocks <- paste(script_dir, "/gblocks_0.91b_ctl", sep="")
+
+
+script_args <- commandArgs(trailingOnly=T)
+if(length(script_args) != 1) {
+       cat(paste("Usage:", script_name, "<in_msa.json>", "\n\n"))
+       cat(paste(
+         "Required Arguments",
+         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.",
+         "\n",
+         sep="\n"))
+       quit()
+}
+
+msa_json_file <- script_args[[1]]
+msa <- fromJSON(readLines(msa_json_file))
+
+
+
+# Generate a Temporary FASTA file from MSA
+ns <- paste("s", c(1:length(msa)), sep="")
+tmp_file <- paste(msa_json_file, "_tmp.fasta", sep="")
+write.fasta(sequences=as.list(msa), names=ns, file=tmp_file)
+
+# Call gblocks_0.91b_ctl
+system(paste(gblocks, tmp_file))
+
+# Parse Results files
+results_file <- paste(msa_json_file, "_tmp.fasta-gbMask"   , sep="")
+gblocks_out  <- read.fasta(results_file)
+
+gblocks_mask  <- gblocks_out[grep("P1;s[0-9]+#Mask", names(gblocks_out))]
+gblocks_mask  <- lapply(gblocks_mask, function(i) {i[-(which(i == " "))]})
+
+gblocks      <- as.vector(gblocks_out$`P1;Gblocks`)
+gblocks      <- gblocks[-(which(gblocks == " "))]
+
+
+
+# Generate JSON
+
+# Initialize Highlights Matrix (logic)
+num_seq <- length(msa)
+num_col <- nchar(msa[1])
+
+highlights <- t(sapply(gblocks_mask, function(i) {i == "@"}))
+rownames(highlights) <- NULL
+
+get_positions <- function() {
+  f1 <- function(col)
+  { 
+    lapply(which(highlights[,col]), function(row) { list(row, col, col) }) 
+  }
+  unlist(recursive=F, lapply(1:ncol(highlights), f1))
+}
+
+colors <- list(
+  list(color=c("White", "Black"), positions=get_positions())
+)
+
+out <- list(type="msa-highlights", version="1", colors=colors)
+
+
+cat(toJSON(out))
+cat("\n")
+
+
+# Cleanup
+system(paste("rm ", msa_json_file, "_tmp.fasta-gb.htm"   , sep=""))
+system(paste("rm ", msa_json_file, "_tmp.fasta-gbMask"   , sep=""))
+system(paste("rm ", msa_json_file, "_tmp.fasta", sep=""))

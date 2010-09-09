@@ -1,0 +1,50 @@
+#!/bin/sh
+
+SRC_DIR=`dirname $0`
+
+if [ $# -lt 1 ]; then
+  echo "Usage: `basename $0` <fasta> [OPTIONS]"
+  echo
+  echo "OPTIONS:
+  -1=<#>     Minimum Number Of Sequences For A Conserved Position: . 9
+  -2=<#>     Minimum Number Of Sequences For A Flank Position: ..... 14
+  -2=<#>     Maximum Number Of Contiguous Nonconserved Positions: .. 8
+  -2=<#>     Minimum Length Of A Block: ............................ 10
+  -5=N|A|H   Allowed Gap Positions: ................................ None
+  -6=Y|N     Use Similarity Matrix: ................................ Yes"
+
+  exit
+fi
+
+# MAIN MENU
+# o. Open File
+# b. Block Parameters
+# s. Saving Options
+# g. Get Blocks
+# q. Quit
+
+# SAVING OPTIONS
+# s. Selected Blocks: ...................................... Save
+# p. Results And Parameters File: .......................... Save
+# n. Nonconserved Blocks: .................................. Don't Save
+# u. Ungapped Alignment: ................................... Don't Save
+# k. Mask File With The Selected Blocks: ................... Don't Save
+# d. Postscript File With The Selected Blocks: ............. Don't Save
+# m. Go To Main Menu
+
+
+
+FASTA=$1
+
+echo "o
+${FASTA}
+b
+m
+s
+z
+s
+k
+m
+g
+q
+" | ${SRC_DIR}/gblocks_0.91b > /dev/null

@@ -9,12 +9,40 @@
   <style type="text/css">
     b  { font-weight: normal; padding: 2px; padding-left: 4px; padding-right: 4px }
     .s { white-space: pre; font-family: "Nimbus Mono L", monospace;}
+
+   .method {
+      margin: 4px;
+      margin-left: 1em;  
+      display: block;
+    }
+
+    #method-selector {
+      position: fixed; right: 20px; top: 20px;
+      letter-spacing: 0px; white-space: normal;
+      background-color: white; padding: 0.5em;
+      border: 1px solid #999999;
+      display: none;
+    }
+    
+    .method-selector {
+      background-color: white;
+      right: 20px; left: auto;
+    }
+
   </style>
   <title>Savvy - %%TITLE%%</title>
 </head>
 <body>
 
 %%SEQUENCES%%
+
+<div id="method-selector" 
+     style="top: auto; border-color: green; bottom: 20px"
+><div
+>Score Alignent:</div>
+</div>
+
+<p style="margin-top: 2em;"></p>
 
 <p>
   Generated on %%GEN_DATE%% by <a href="http://github.com/alevchuk/savvy/">Savvy</a><br />
@@ -27,17 +55,31 @@
 
 
 <script>
-$.getJSON('%%JSON_FILE%%', function(data) {
-
-  $.each(data.colors, function(k1, c) {
-    $.each(c.positions, function(k2, p) {
-      var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
-      residue.css('color', c.color[0]);
-      residue.css('background-color', c.color[1]);
+function apply_method(method_name) {
+  $.getJSON(method_name, function(data) {
+  
+    $.each(data.colors, function(k1, c) {
+      $.each(c.positions, function(k2, p) {
+        var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
+        residue.css('color', c.color[0]);
+        residue.css('background-color', c.color[1]);
+      });
     });
   });
+}
 
+$.getJSON('%%JSON_MENU_FILE%%', function(data) {
+  $.each(data.items, function(k1, c) {
+    $('<button id="b' + k1 + '" class="method">' +
+      c + '</button><div>'
+     ).appendTo('#method-selector');
 
+    $('#b' + k1).click(function () {
+      apply_method(c);
+    });
+
+  });
+  $('#method-selector').show();
 });
 </script>
 

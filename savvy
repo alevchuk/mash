@@ -8,6 +8,8 @@ PLUGINS=$SRC_DIR/plugins/*.savvy
 # Keep only the executable Plugins
 PLUGINS=`for i in $PLUGINS; do if [ -x $i ]; then echo $i; fi; done`
 
+PLUGIN_NAMES=`for i in $PLUGINS; do basename $i; done; echo`
+
 
 IMPORT=$SRC_DIR/savvy-import-fasta
 GENERATE=$SRC_DIR/savvy-generate-html
@@ -29,12 +31,17 @@ $IMPORT $FASTA ${FASTA}_msa.json ${FASTA}_headers.json
 
 
 # Run savvy-generate-html
-all_plugins=`for i in $PLUGINS; do echo -n "-p $i "; done; echo`
-$GENERATE ${FASTA} > ${FASTA}_savvy.html
+all_plugins=`for i in $PLUGIN_NAMES; do echo -n "-p $i "; done; echo`
+$GENERATE $FASTA $all_pligins ${FASTA}_savvy.html $all_plugins
 
 
 # Run all Plugins
 for plugin in $PLUGINS; do
   p_name=`basename $plugin`
-  $plugin ${FASTA}_msa.json > ${FASTA}_${p_name}_savvy.json
+  $plugin ${FASTA}_msa.json > ${FASTA}_${p_name}.json
 done
+
+
+# Cleanup
+#*_headers.json
+#*_msa.json

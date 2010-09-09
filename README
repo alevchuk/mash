@@ -10,7 +10,7 @@ OUTPUT:
 
 
 REQUIREMENTS:
-  All code will be re-written in R.
+  All code will be re-written in R and Shell.
   Mandatory R libraries:
     * seqinr
     * rjson

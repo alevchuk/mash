@@ -28,45 +28,54 @@ msa <- matrix(msa, nrow=num_sequences, byrow=T)
 
 
 # Default Gblocks Threasholds
-#IS_ratio <- 0.50
-#FS_ratio <- 0.85
 IS_ratio <- 0.50
 FS_ratio <- 0.85
 
-IS  <- num_sequences * IS_ratio + 1
-FS  <- num_sequences * FS_ratio
+IS  <- floor(num_sequences * IS_ratio + 1)
+FS  <- floor(num_sequences * FS_ratio)
 CP  <- 8
 BL1 <- 15
 BL2 <- 10
 
-step1 <- function(col) {
-  num_identical <- max(table(col))
 
+step1_cols <- apply(msa, 2, function(col) {
+                               num_identical <- max(table(col))
+                             
+                             
+                               if (num_identical < IS || any(col == '-')) {
+                                 return("nonconserved")
+                               }
+                               else if (num_identical < FS) {
+                                 return("conserved")
+                               }
+                               else {
+                                 return("highly conserved")
+                               }
+                               
+                             }
+               )
 
-  if (num_identical < IS || any(col == '-')) {
-    return("nonconserved")
-  }
-  else if (num_identical < FS) {
-    return("conserved")
-  }
-  else {
-    return("highly conserved")
-  }
-  
+step1_rows <- function(col) {
+  t <- table(msa[,col])
+  most_conserved_residue <- names(which(t == max(t)))
+  which(msa[,col] == most_conserved_residue)
 }
-
-step1 <- apply(msa, 2, step1)
 
 get_pos <- function(type) {
-  f1 <- function(i) { lapply(1:num_sequences, function(row){list(row, i, i)}) }
-  unlist(recursive=F, lapply(which(step1 == type), f1))
+  f1 <- function(col)
+  { 
+    lapply(step1_rows(col), function(row) { list(row, col, col) }) 
+  }
+  unlist(recursive=F, lapply(which(step1_cols == type), f1))
 }
 
-hc <- list(color=c("White", "#A02560"), positions=get_pos("highly conserved"))
-nc <- list(color=c("White", "#F07DAB"), positions=get_pos("conserved"))
 
 
-colors <- list(hc, nc)
+colors <- list(
+  list(color=c("White", "#A02560"), positions=get_pos("highly conserved")),
+  list(color=c("White", "#F07DAB"), positions=get_pos("conserved"))
+)
+
 
 out <- list(type="msa-highlights", version="1", colors=colors)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(seqinr) # for read.fasta
+library(rjson)
 
 
 importFasta <- function(filename.fasta=filename.fasta) {
@@ -20,13 +21,13 @@ make_html_seqs <- function(seqs_info, msa){
        return(o)
 }
 
-applyTemplate <- function(html_seqs, title=title, json=json) {
+applyTemplate <- function(html_seqs, title=title, menu=menu) {
         lines <- readLines(
           paste(script.dir, "/html/savvy.template.html", sep=""))
 
         lines <- lapply(lines, function(l){sub("%%SEQUENCES%%", html_seqs, l)})
         lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
-        lines <- lapply(lines, function(l){sub("%%JSON_FILE%%", json, l)})
+        lines <- lapply(lines, function(l){sub("%%JSON_MENU_FILE%%", menu, l)})
         lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", Sys.time(), l)})
 
         lines <- paste(lines, sep = "", collapse="\n")
@@ -51,24 +52,47 @@ script.name <- script.path.list[[length(script.path.list)]]
 
 script.args <- commandArgs(trailingOnly=T)
 
-if(length(script.args) != 1) {
-       cat(paste("Usage:", script.name, "<file.fasta>", "\n\n"))
-       cat(paste("Required Options", "\n\n"))
+if(length(script.args) < 2) {
        cat(paste(
-         "  <file.fasta> is the multiple sequence alignment (msa)", "\n"))
+         paste("Usage:", script.name, "<in.fasta> <out.html> [PLUGINS]\n"),
+         "Required Options",
+         "  <in.fasta>    multiple sequence alignment (msa) in FASTA",
+         "  <out.html>    view of the msa in HTML\n",
+         "PLUGINS",
+         "  -p <plugin1>.savvy -p <plugin2>.savvy -p <plugin3>.savvy ...",
+         "",
+         sep="\n"))
        quit()
 }
 
 file.fasta <- script.args[[1]]
+file.out   <- script.args[[2]]
+plugins    <- sapply(which(script.args == "-p"), function(i){script.args[i+1]})
 
+prefix     <- strsplit(file.fasta, '/')[[1]]
+prefix     <- prefix[length(prefix)]
 
-
+if (length(grep('/', file.out)) > 0) {
+  out_dir    <- strsplit(file.out, '/')[[1]]
+  out_dir    <- paste(out_dir[1:(length(out_dir)-1)], sep='/')
+} else {
+  out_dir    <- "./"
+}
 
 fasta <- importFasta(filename.fasta=file.fasta)
 
 html_seqs  <- make_html_seqs(fasta$seqs_info, fasta$msa)
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
 
-# TODO: This read all the -p options
-j <- paste("../", file.fasta, "_gblocks.savvy_savvy.json", sep = "", collapse="")
-cat(applyTemplate(html_chunk, title=file.fasta, json=j), "\n")
+# Build the name for the Menu file
+m      <- paste(prefix, "_menu.json", sep = "", collapse="")
+m_path <- paste(out_dir, m, sep="/")
+
+# Generate the Menu file
+pl <- lapply(plugins, function(i){
+  paste(prefix, "_", i,".json", sep = "", collapse="")
+})
+writeLines(toJSON(list(type="menu", version="1", items=pl)), m_path)
+
+# Generate HTML
+writeLines(applyTemplate(html_chunk, title=file.fasta, menu=m), file.out)
