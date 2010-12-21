@@ -1,3 +1,6 @@
+
+###### This is outdataed #######
+
 = Requirements =
 
   Only Ruby and R (with Biostrings package) are required.
@@ -19,13 +22,13 @@
 
   1. Move the entire clustalw-to-html-0.9 directory where it's readable by all:
     cd ..
-    sudo mv clustalw-to-html-0.9 /opt/clustalw-to-html-0.9
-    sudo chmod -R o+r            /opt/clustalw-to-html-0.9
-    sudo chmod +x                /opt/clustalw-to-html-0.9/highlight-regions.R
-    sudo chmod +x              /opt/clustalw-to-html-0.9/filter-hmmpfam-output
-    sudo chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-fasta
-    sudo chmod +x                /opt/clustalw-to-html-0.9/fasta-to-html
-    sudo chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-html
+    mv clustalw-to-html-0.9 /opt/clustalw-to-html-0.9
+    chmod -R o+r            /opt/clustalw-to-html-0.9
+    chmod +x                /opt/clustalw-to-html-0.9/highlight-regions.R
+    chmod +x                /opt/clustalw-to-html-0.9/filter-hmmpfam-output
+    chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-fasta
+    chmod +x                /opt/clustalw-to-html-0.9/fasta-to-html
+    chmod +x                /opt/clustalw-to-html-0.9/clustalw-to-html
 
   2. Make symbolic links to /usr/local/bin where it is in the PATH of everyone:
     sudo ln -s /opt/clustalw-to-html-0.9/clustalw-to-fasta /usr/local/bin/

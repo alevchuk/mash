@@ -1,0 +1,107 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+
+apply.template <- function(html_seqs=html_seqs,
+                           inline_css=inline_css,
+                           title=title,
+                           menu=menu) {
+
+        lines <- readLines(
+          paste(software.dir, "/html/template.html", sep=""))
+
+        lines <- lapply(lines, function(l){sub("%%CSS%%", inline_css, l)})
+        lines <- lapply(lines, function(l){sub("%%MSA%%", html_seqs, l)})
+        lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
+        lines <- lapply(lines, function(l){sub("%%JSON_MENU_FILE%%", menu, l)})
+        lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", Sys.time(), l)})
+
+        lines <- paste(lines, sep = "", collapse="\n")
+        return(lines)
+}
+
+
+
+
+
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "", 
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+software.dir  <- paste(c(script.dir.list, '..'), sep='/', collapse='/')
+script.name   <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) < 2) {
+       cat(paste(
+         paste("Usage:", script.name, "<webdata> <out.html> [PLUGINS]\n"),
+         "Required Options",
+         "  <webdata>      directory with files produced by the analyzer",
+         "  <out.html>     output front page in HTML\n",
+         "PLUGINS",
+         "  -p <plugin1> -p <plugin2> ...",
+         "",
+         sep="\n"))
+       quit()
+}
+
+dir.webdata  <- sub("/$", "", script.args[[1]])
+name.msa     <- sub("_webdata", "", dir.webdata)
+
+file.out     <- script.args[[2]]
+
+plugins      <- sapply(which(script.args == "-p"), function(i){
+                  script.args[i+1]
+                })
+
+file.msa     <- paste(dir.webdata, 'msa.json', sep='/')
+
+if (length(grep('/', file.out)) > 0) {
+  out_dir    <- strsplit(file.out, '/')[[1]]
+  out_dir    <- paste(out_dir[1:(length(out_dir)-1)], sep='/')
+} else {
+  out_dir    <- "./"
+}
+
+msa <- fromJSON(readLines(file.msa))
+
+html_seqs  <- "Alex"
+html_chunk <- paste(html_seqs, sep = "", collapse="\n")
+
+# Build the name for the Menu file
+dir.menu      <- paste(dir.webdata, "menu.json", sep = "/", collapse="")
+
+### TMP
+plugin1 = paste(dir.webdata, "/gblocks_in_r.coloring-scorer.html",
+            sep = "", collapse="")
+
+# Generate the Menu file
+pl <- lapply(plugins, function(i){
+  paste(dir.webdata, "_", i,".json", sep = "", collapse="")
+})
+pl <- append(pl, plugin1)
+writeLines(toJSON(list(type="menu", version="1", items=pl)), dir.menu)
+
+
+# Get CSS
+css_files  = dir(full.names=T, pattern="*.css$",
+                 paste(software.dir, "html", sep='/'))
+
+
+
+# Generate HTML Analysis Page
+writeLines(apply.template(
+  html_seqs=html_chunk,
+  inline_css=paste(unlist(lapply(css_files, readLines)), collapse="\n"),
+  title=name.msa,
+  menu=dir.menu), file.out
+)

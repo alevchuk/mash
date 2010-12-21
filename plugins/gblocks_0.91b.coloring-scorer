@@ -67,7 +67,7 @@ get_positions <- function() {
 }
 
 colors <- list(
-  list(color=c("White", "Black"), positions=get_positions())
+  list(color="sb", positions=get_positions())
 )
 
 out <- list(type="msa-highlights", version="1", colors=colors)

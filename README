@@ -1,4 +1,4 @@
-Multiple Sequence Alignment Viewer
+Sequence Alignment Scoring Hypertext Analyzer
 
 INPUT:
   ClustalW  - a standard format for storing multiple sequence alignments.
@@ -8,22 +8,25 @@ OUTPUT:
   HTML file    - contains sequences.
   JSON file(s) - highlighting info for 1 or more scoring methods.
 
-
 REQUIREMENTS:
-  All code will be re-written in R and Shell.
-  Mandatory R libraries:
+  All code is written in R.
+
+  Required R libraries:
     * seqinr
     * rjson
+    * Biostrings
 
-  Output is viewed in a web browser (with JavaScript enabled).
-
+  Results are viewable in a web browser.
 
 FEATURES:
   * Displays MSAs in HTML.
   * Integrates with many scoring methods.
-  * Has a very compact HTML encoding (<b> tag). Only 8 characters per residue.
-  * Switches between multiple scoring methods quickly (no need to reload page).
+  * Has a very compact HTML encoding.
+  * Switches between multiple scoring methods seamlessly.
 
+SCORING METHODS AVAILABLE:
+  * Gblocks official implementation
+  * Gblocks unofficial open source implementation
 
 RELATED WORK:
 

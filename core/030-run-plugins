@@ -1,0 +1,54 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+library(multicore)
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "", 
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+script.dir  <- paste(c(script.dir.list, '..'), sep='/', collapse='/')
+script.name <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) != 2) {
+       cat(paste(
+         paste("Usage:", script.name, "<webdata> <plugins>\n"),
+         "Required Options",
+         "  <webdata>      directory with files produced by the analyzer",
+         "  <plugins>      directory where all the plugins are",
+         "",
+         sep="\n"))
+       quit()
+}
+
+dir.webdata  <- sub("/$", "", script.args[[1]])
+dir.plugins  <- sub("/$", "", script.args[[2]])
+
+# TODO: More checks (dirs exists, at least 1 plugin exist)
+
+list.plugins <- dir(dir.plugins, pattern="*.coloring-scorer$") 
+
+run.plugin <- function (name.plugin) {
+   out <-
+     pipe(paste(
+       paste(dir.plugins, name.plugin, sep="/"),
+       paste(dir.webdata, "msa.json", sep="/"),
+       sep=" ")
+     )
+
+   writeLines(readLines(out),
+     paste(dir.webdata, paste(name.plugin, ".json", sep=''), sep="/"))
+}
+
+# Run plugins in parralel
+jobs <- lapply(list.plugins, function(x) parallel(run.plugin(x), name=x))
+invisible(collect(jobs))

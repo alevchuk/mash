@@ -1,0 +1,60 @@
+#!/usr/bin/env Rscript
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "", 
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+software.dir  <- paste(c(script.dir.list), sep='/', collapse='/')
+script.name   <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) != 1) {
+       cat(paste(
+         paste("Usage:", script.name, "<msa>.fasta\n"),
+         "Required Options",
+         "  <mas.fasta>     A protein Multiple Sequence Alignment in FASTA",
+         "",
+         sep="\n"))
+       quit()
+}
+
+fasta.file.msa  <- script.args[[1]]
+dir.plugins <- paste(software.dir, "plugins", sep='/')
+dir.core    <- paste(software.dir, "core", sep='/')
+
+if (!file.exists(fasta.file.msa) || file.info(fasta.file.msa)["isdir"][[1]]) {
+  cat(paste("ERROR:", fasta.file.msa, "does not exist\n"), file = stderr())
+  quit(status = 1)
+}
+
+dir.webdata <- paste(fasta.file.msa, "webdata", sep='_')
+if (!file.exists(dir.webdata)) { dir.create(dir.webdata) }
+
+system(paste(paste(dir.core, "010-import-fasta", sep="/"),
+    fasta.file.msa,
+    paste(dir.webdata, "msa.json", sep="/"),
+    paste(dir.webdata, "headers.json", sep="/")
+  )
+)
+
+system(paste(paste(dir.core, "030-run-plugins", sep="/"),
+    dir.webdata,
+    dir.plugins
+  )
+)
+
+system(paste(paste(dir.core, "040-finalize-plugins", sep="/"), dir.webdata))
+
+system(paste(paste(dir.core, "050-generate-frontpage", sep="/"),
+    dir.webdata,
+    paste(fasta.file.msa, "sasha", "html", sep='.')
+  )
+)

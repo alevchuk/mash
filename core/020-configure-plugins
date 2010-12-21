@@ -1,0 +1,87 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+
+load.biostirngs = function() { # Loaded after checking parameters
+  library(Biostrings) 
+}
+
+
+initial.options <- commandArgs()
+file.arg.name <- "--file="
+
+script.path <- sub(file.arg.name, "", 
+  initial.options[grep(file.arg.name, initial.options)])
+
+script.path.list <- strsplit(script.path, '/')[[1]]
+script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
+
+script.dir  <- paste(c(script.dir.list, '..'), sep='/', collapse='/')
+script.name <- script.path.list[[length(script.path.list)]]
+
+
+
+script.args <- commandArgs(trailingOnly=T)
+
+if(length(script.args) < 1) {
+       cat(paste(
+         paste("Usage:", script.name, "<webdata>\n"),
+         "Required Options",
+         "  <webdata>      directory with files produced by the analyzer",
+         "",
+         sep="\n"))
+       quit()
+}
+
+dir.webdata  <- script.args[[1]]
+
+file.msa     <- paste(dir.webdata, 'msa.json', sep='/')
+msa          <- fromJSON(readLines(file.msa))
+
+file.headers <- paste(dir.webdata, 'headers.json', sep='/')
+headers      <- fromJSON(readLines(file.headers))
+
+# TODO: menu
+
+
+# TODO: get plugin list from menu
+
+### TMP
+plugin1 = paste(dir.webdata, "/nil.coloring-scorer.html", sep = "", collapse="")
+
+
+
+# Generate HTML plugin result pages
+
+####################################
+## Viewing of MSAs in HTML Format ##
+####################################
+## Original Author: Thomas Girke
+## Viewing large alignments in a web browser can be very efficient.
+## The following example outputs an HTML formatted alignment with
+## consensus line.
+StringSet2html <- function(start=1, counter=20, end=length(msa[[1]]), msa, ...) {
+        if(class(msa)=="AAStringSet")
+          msa <- AAStringSet(msa, start=start, end=end)
+        if(class(msa)=="DNAStringSet")
+          msa <- DNAStringSet(msa, start=start, end=end)
+        msavec <- sapply(msa, toString)
+        offset <- (counter-1)-nchar(nchar(msavec[1]))
+        legend <- paste(paste(paste(paste(rep(" ", offset), collapse=""),
+          format(seq(0, 
+            nchar(msavec[1]), by=counter)[-1]
+          )), collapse=""), collapse="")
+        consensus <- consensusString(msavec, ambiguityMap=".", ...)
+        msavec <- paste(msavec, rowSums(as.matrix(msa) != "-"), sep="  ")
+        msavec <- paste(format(c("", names(msa), "Consensus"), justify="left"),
+          c(legend, msavec, consensus), sep="  ")
+
+        msavec <- sapply(msavec, 
+          function(i){c(paste("<div class=\"s\">",i, "</div>", collapse=""))})
+        writeLines(msavec, plugin1)
+}
+
+load.biostirngs()
+msa <- read.AAStringSet("NAD3.fasta", "fasta") 
+StringSet2html(msa=msa, counter=20, threshold=0.7)
+

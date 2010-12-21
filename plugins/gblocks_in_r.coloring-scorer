@@ -72,8 +72,8 @@ get_pos <- function(type) {
 
 
 colors <- list(
-  list(color=c("White", "#A02560"), positions=get_pos("highly conserved")),
-  list(color=c("White", "#F07DAB"), positions=get_pos("conserved"))
+  list(color="g9", positions=get_pos("highly conserved")),
+  list(color="g8", positions=get_pos("conserved"))
 )
 
 

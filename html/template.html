@@ -7,8 +7,15 @@
   <!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script> -->
   <script src="http://code.jquery.com/jquery-latest.js"></script>
   <style type="text/css">
-    b  { font-weight: normal; padding: 2px; padding-left: 4px; padding-right: 4px }
+    b  { font-weight: normal; position: relative}
+    b  { padding: 2px; padding-left: 4px; padding-right: 4px }
     .s { white-space: pre; font-family: "Nimbus Mono L", monospace;}
+
+   .ruller-mark {
+     position: absolute;
+     top: 0;
+     right: 3px;
+   }
 
    .method {
       margin: 4px;
@@ -29,23 +36,32 @@
       right: 20px; left: auto;
     }
 
+    %%CSS%%
+
   </style>
-  <title>Savvy - %%TITLE%%</title>
+  <title>%%TITLE%%</title>
 </head>
 <body>
 
-%%SEQUENCES%%
+<h2 style="float: left">Sequence Alignment Scoring Hypertext Analyzer</h2>
+<div style="float: left"><a href="http://github.com/alevchuk/sasha/">(R Source Code)</a></div>
+<div style="clear: left"></div>
+<h3>%%TITLE%%</h3>
+
+<div id="msa-window">
+%%MSA%%
+</div>
 
 <div id="method-selector" 
      style="top: auto; border-color: green; bottom: 20px"
-><div
->Score Alignent:</div>
+><h3 style="margin-top: 0">Main Menu</h3><div
+>Scoring Methods:</div>
 </div>
 
 <p style="margin-top: 2em;"></p>
 
 <p>
-  Generated on %%GEN_DATE%% by <a href="http://github.com/alevchuk/savvy/">Savvy</a><br />
+  Generated on %%GEN_DATE%% <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Valid HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
@@ -56,22 +72,28 @@
 
 <script>
 function apply_method(method_name) {
-  $.getJSON(method_name, function(data) {
-  
-    $.each(data.colors, function(k1, c) {
-      $.each(c.positions, function(k2, p) {
-        var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
-        residue.css('color', c.color[0]);
-        residue.css('background-color', c.color[1]);
-      });
-    });
+  $.get(method_name, function(data) {
+    $('#msa-window').html(data); 
   });
+
+  // ## ## Too slow!
+  // ## $.getJSON(method_name, function(data) {
+  // ## 
+  // ##   $.each(data.colors, function(k1, c) {
+  // ##     $.each(c.positions, function(k2, p) {
+  // ##       var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
+  // ##       residue.css('color', c.color[0]);
+  // ##       residue.css('background-color', c.color[1]);
+  // ##     });
+  // ##   });
+  // ## });
 }
 
 $.getJSON('%%JSON_MENU_FILE%%', function(data) {
   $.each(data.items, function(k1, c) {
     $('<button id="b' + k1 + '" class="method">' +
-      c + '</button><div>'
+      c.replace(/.*\.fasta_webdata\//, "").replace(
+       "\.coloring-scorer.html", "") + '</button><div>'
      ).appendTo('#method-selector');
 
     $('#b' + k1).click(function () {
@@ -85,4 +107,3 @@ $.getJSON('%%JSON_MENU_FILE%%', function(data) {
 
 </body>
 </html>
-
