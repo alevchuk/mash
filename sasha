@@ -12,8 +12,6 @@ script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
 software.dir  <- paste(c(script.dir.list), sep='/', collapse='/')
 script.name   <- script.path.list[[length(script.path.list)]]
 
-
-
 script.args <- commandArgs(trailingOnly=T)
 
 if(length(script.args) != 1) {
@@ -29,6 +27,8 @@ if(length(script.args) != 1) {
 fasta.file.msa  <- script.args[[1]]
 dir.plugins <- paste(software.dir, "plugins", sep='/')
 dir.core    <- paste(software.dir, "core", sep='/')
+
+results_file  <- paste(fasta.file.msa, "sasha", "html", sep='.')
 
 if (!file.exists(fasta.file.msa) || file.info(fasta.file.msa)["isdir"][[1]]) {
   cat(paste("ERROR:", fasta.file.msa, "does not exist\n"), file = stderr())
@@ -55,6 +55,8 @@ system(paste(paste(dir.core, "040-finalize-plugins", sep="/"), dir.webdata))
 
 system(paste(paste(dir.core, "050-generate-frontpage", sep="/"),
     dir.webdata,
-    paste(fasta.file.msa, "sasha", "html", sep='.')
+    results_file
   )
 )
+
+cat(results_file, "\n")

@@ -54,8 +54,12 @@ if(length(script.args) < 2) {
        quit()
 }
 
-dir.webdata  <- sub("/$", "", script.args[[1]])
-name.msa     <- sub("_webdata", "", dir.webdata)
+# TODO: Enforce that Webdata and out.html are in the same directory
+
+dir.path.webdata  <- sub("/$", "", script.args[[1]])
+dir.name.webdata  <- tail(strsplit(dir.path.webdata, "/")[[1]], 1)
+
+name.msa          <- sub("_webdata", "", dir.name.webdata)
 
 file.out     <- script.args[[2]]
 
@@ -63,7 +67,7 @@ plugins      <- sapply(which(script.args == "-p"), function(i){
                   script.args[i+1]
                 })
 
-file.msa     <- paste(dir.webdata, 'msa.json', sep='/')
+file.msa     <- paste(dir.path.webdata, 'msa.json', sep='/')
 
 if (length(grep('/', file.out)) > 0) {
   out_dir    <- strsplit(file.out, '/')[[1]]
@@ -78,10 +82,11 @@ html_seqs  <- "Alex"
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
 
 # Build the name for the Menu file
-dir.menu      <- paste(dir.webdata, "menu.json", sep = "/", collapse="")
+dir.path.menu <- paste(dir.path.webdata, "menu.json", sep = "/", collapse="")
+dir.name.menu <- paste(dir.name.webdata, "menu.json", sep = "/", collapse="")
 
 ### TMP
-plugin1 = paste(dir.webdata, "/gblocks_in_r.coloring-scorer.html",
+plugin1 = paste(dir.name.webdata, "/gblocks_in_r.coloring-scorer.html",
             sep = "", collapse="")
 
 # Generate the Menu file
@@ -89,7 +94,7 @@ pl <- lapply(plugins, function(i){
   paste(dir.webdata, "_", i,".json", sep = "", collapse="")
 })
 pl <- append(pl, plugin1)
-writeLines(toJSON(list(type="menu", version="1", items=pl)), dir.menu)
+writeLines(toJSON(list(type="menu", version="1", items=pl)), dir.path.menu)
 
 
 # Get CSS
@@ -103,5 +108,5 @@ writeLines(apply.template(
   html_seqs=html_chunk,
   inline_css=paste(unlist(lapply(css_files, readLines)), collapse="\n"),
   title=name.msa,
-  menu=dir.menu), file.out
+  menu=dir.name.menu), file.out
 )
