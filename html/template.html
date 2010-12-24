@@ -71,8 +71,8 @@
 
 
 <script>
-function apply_method(method_name) {
-  $.get(method_name, function(data) {
+function apply_method(webdata_dir, method_name) {
+  $.get(webdata_dir + "/" + method_name + ".html", function(data) {
     $('#msa-window').html(data); 
   });
 
@@ -90,14 +90,13 @@ function apply_method(method_name) {
 }
 
 $.getJSON('%%JSON_MENU_FILE%%', function(data) {
-  $.each(data.items, function(k1, c) {
+  $.each(data.plugins, function(k1, c) {
     $('<button id="b' + k1 + '" class="method">' +
-      c.replace(/.*\.fasta_webdata\//, "").replace(
-       "\.coloring-scorer.html", "") + '</button><div>'
+      c.replace("\.coloring-scorer.html", "") + '</button><div>'
      ).appendTo('#method-selector');
 
     $('#b' + k1).click(function () {
-      apply_method(c);
+      apply_method(data.webdata_dir, c);
     });
 
   });

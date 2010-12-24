@@ -43,12 +43,10 @@ script.args <- commandArgs(trailingOnly=T)
 
 if(length(script.args) < 2) {
        cat(paste(
-         paste("Usage:", script.name, "<webdata> <out.html> [PLUGINS]\n"),
+         paste("Usage:", script.name, "<webdata> <out.html>\n"),
          "Required Options",
          "  <webdata>      directory with files produced by the analyzer",
          "  <out.html>     output front page in HTML\n",
-         "PLUGINS",
-         "  -p <plugin1> -p <plugin2> ...",
          "",
          sep="\n"))
        quit()
@@ -62,10 +60,6 @@ dir.name.webdata  <- tail(strsplit(dir.path.webdata, "/")[[1]], 1)
 name.msa          <- sub("_webdata", "", dir.name.webdata)
 
 file.out     <- script.args[[2]]
-
-plugins      <- sapply(which(script.args == "-p"), function(i){
-                  script.args[i+1]
-                })
 
 file.msa     <- paste(dir.path.webdata, 'msa.json', sep='/')
 
@@ -81,20 +75,9 @@ msa <- fromJSON(readLines(file.msa))
 html_seqs  <- "Alex"
 html_chunk <- paste(html_seqs, sep = "", collapse="\n")
 
-# Build the name for the Menu file
+# The Menu file is prodced by 020-configure-plugins
 dir.path.menu <- paste(dir.path.webdata, "menu.json", sep = "/", collapse="")
 dir.name.menu <- paste(dir.name.webdata, "menu.json", sep = "/", collapse="")
-
-### TMP
-plugin1 = paste(dir.name.webdata, "/gblocks_in_r.coloring-scorer.html",
-            sep = "", collapse="")
-
-# Generate the Menu file
-pl <- lapply(plugins, function(i){
-  paste(dir.webdata, "_", i,".json", sep = "", collapse="")
-})
-pl <- append(pl, plugin1)
-writeLines(toJSON(list(type="menu", version="1", items=pl)), dir.path.menu)
 
 
 # Get CSS

@@ -16,7 +16,7 @@ script.path <- sub(file.arg.name, "",
 script.path.list <- strsplit(script.path, '/')[[1]]
 script.dir.list  <- script.path.list[1:(length(script.path.list)-1)]
 
-script.dir  <- paste(c(script.dir.list, '..'), sep='/', collapse='/')
+software.dir  <- paste(c(script.dir.list, '..'), sep='/', collapse='/')
 script.name <- script.path.list[[length(script.path.list)]]
 
 
@@ -33,24 +33,28 @@ if(length(script.args) != 1) {
        quit()
 }
 
-dir.webdata  <- sub("/$", "", script.args[[1]])
+dir.path.webdata  <- sub("/$", "", script.args[[1]])
+dir.name.webdata  <- tail(strsplit(dir.path.webdata, "/")[[1]], 1)
 
-file.msa     <- paste(dir.webdata, 'msa.json', sep='/')
+dir.plugins  <- paste(software.dir, "plugins", sep='/')
+plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
+
+
+file.msa     <- paste(dir.path.webdata, 'msa.json', sep='/')
 msa          <- fromJSON(readLines(file.msa))
 
-file.headers <- paste(dir.webdata, 'headers.json', sep='/')
+file.headers <- paste(dir.path.webdata, 'headers.json', sep='/')
 headers      <- fromJSON(readLines(file.headers))
 
-file.menu    <- paste(dir.webdata, 'menu.json', sep='/')
-headers      <- fromJSON(readLines(file.headers))
+file.menu    <- paste(dir.path.webdata, 'menu.json', sep='/')
 
+# Generate the Menu file
+writeLines(toJSON(list(type="menu", version="2", webdata_dir=dir.name.webdata,
+                  plugins=plugins)), file.menu)
 
-# TODO: get plugin list from menu
+# Read the Menu file
+menu_data    <- fromJSON(readLines(file.menu))
 
-### TMP
-file.data.plugin1 = paste(dir.webdata, "/gblocks_in_r.coloring-scorer.json", sep = "", collapse="")
-file.html.plugin1 = paste(dir.webdata, "/gblocks_in_r.coloring-scorer.html", sep = "", collapse="")
-plugin1_data = fromJSON(readLines(file.data.plugin1))
 
 ########################################################
 ## Every character will be surrounded by <b>          ##
@@ -100,7 +104,6 @@ colorizeWithPlugin <- function (msa, plugin_data) {
   return(lapply(characters, function(x){paste(x, sep="", collapse="")}))
 }
 
-msavec_html <- colorizeWithPlugin(msa, plugin1_data)
 
 ####################################
 ## Viewing of MSAs in HTML Format ##
@@ -144,10 +147,23 @@ StringSet2html <- function(start=1, ruller_step=20, end=length(msa[[1]]),
         return(msavec)
 }
 
-load.biostirngs()
 
-biostrings_msa = AAStringSet(msa)
-names(biostrings_msa) = headers
+# Get plugin list from menu
+# TODO:Check that at least 1 plugin exists
+for (name.plugin in menu_data[["plugins"]]) {
 
-html <- StringSet2html(msa=biostrings_msa, ruller_step=20, threshold=0.7)
-writeLines(html, file.html.plugin1)
+  file.plugin_data <- paste(dir.path.webdata, paste(name.plugin, "json", sep="."), sep = "/", collapse="")
+  file.plugin_html <- paste(dir.path.webdata, paste(name.plugin, "html", sep="."), sep = "/", collapse="")
+  plugin_data      <- fromJSON(readLines(file.plugin_data))
+  
+  
+  msavec_html <- colorizeWithPlugin(msa, plugin_data)
+  
+  load.biostirngs()
+  
+  biostrings_msa = AAStringSet(msa)
+  names(biostrings_msa) = headers
+  
+  html <- StringSet2html(msa=biostrings_msa, ruller_step=20, threshold=0.7)
+  writeLines(html, file.plugin_html)
+}
