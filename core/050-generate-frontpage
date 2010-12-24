@@ -101,11 +101,17 @@ css_files  = dir(full.names=T, pattern="*.css$",
                  paste(software.dir, "html", sep='/'))
 
 
+title=sub(".fasta$", "", name.msa)
+num_seqs = length(msa)
+mean_seq_len = mean(sapply(msa, function(x){nchar(gsub("-", "", x))}))
+mean_seq_len = sprintf("%.1f", mean_seq_len)
+
+title=paste(title, paste("(", num_seqs, " &#x2a2f; ", mean_seq_len, ")", sep=""))
 
 # Generate HTML Analysis Page
 writeLines(apply.template(
   msa_window_html=html_chunk,
   inline_css=paste(unlist(lapply(css_files, readLines)), collapse="\n"),
-  title=name.msa,
+  title=title,
   menu=dir.name.menu), file.out
 )
