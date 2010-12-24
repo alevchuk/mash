@@ -2,7 +2,7 @@
 
 library(rjson)
 
-apply.template <- function(html_seqs=html_seqs,
+apply.template <- function(msa_window_html=msa_window_html,
                            inline_css=inline_css,
                            title=title,
                            menu=menu) {
@@ -11,7 +11,7 @@ apply.template <- function(html_seqs=html_seqs,
           paste(software.dir, "/html/template.html", sep=""))
 
         lines <- lapply(lines, function(l){sub("%%CSS%%", inline_css, l)})
-        lines <- lapply(lines, function(l){sub("%%MSA%%", html_seqs, l)})
+        lines <- lapply(lines, function(l){sub("%%MSA%%", msa_window_html, l)})
         lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
         lines <- lapply(lines, function(l){sub("%%JSON_MENU_FILE%%", menu, l)})
         lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", Sys.time(), l)})
@@ -72,8 +72,24 @@ if (length(grep('/', file.out)) > 0) {
 
 msa <- fromJSON(readLines(file.msa))
 
-html_seqs  <- "Alex"
-html_chunk <- paste(html_seqs, sep = "", collapse="\n")
+dir.plugins  <- paste(software.dir, "plugins", sep='/')
+plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
+
+nil_plugin   <- "nil.coloring-scorer"
+
+if (!length(which(nil_plugin == plugins))) {
+  first_plugin_path <-
+    paste(
+      dir.path.webdata, 
+      paste(plugins[[1]], "html", sep="."), sep = "/", collapse="")
+} else {
+  first_plugin_path <-
+    paste(
+      dir.path.webdata, 
+      paste(nil_plugin, "html", sep="."), sep = "/", collapse="")
+}
+
+html_chunk <- paste(readLines(first_plugin_path), collapse="\n")
 
 # The Menu file is prodced by 020-configure-plugins
 dir.path.menu <- paste(dir.path.webdata, "menu.json", sep = "/", collapse="")
@@ -88,7 +104,7 @@ css_files  = dir(full.names=T, pattern="*.css$",
 
 # Generate HTML Analysis Page
 writeLines(apply.template(
-  html_seqs=html_chunk,
+  msa_window_html=html_chunk,
   inline_css=paste(unlist(lapply(css_files, readLines)), collapse="\n"),
   title=name.msa,
   menu=dir.name.menu), file.out
