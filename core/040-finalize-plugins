@@ -133,6 +133,11 @@ StringSet2html <- function(start=1, ruler_step=20, end=length(msa[[1]]),
         })
         ruler <- lapply(ruler, nice_html_spacing)
         ruler <- paste(ruler,  collapse="")
+        ruler_line <- rep("~", n)
+        ruler_line[seq(1, n, by=ruler_step)[-1] - 1] <- "+"
+        ruler_line <- lapply(ruler_line, nice_html_spacing)
+        ruler_line <- paste(ruler_line,  collapse="")
+
         consensus <- consensusString(msavec, ambiguityMap=".", ...)
         consensus <- nice_html_spacing_of_string(consensus)
         
@@ -140,8 +145,8 @@ StringSet2html <- function(start=1, ruler_step=20, end=length(msa[[1]]),
           paste(msavec_html, rowSums(as.matrix(msa) != "-"), sep="  ")
 
         msavec <- paste(
-          format(c("", names(msa), "Consensus"), justify="left"),
-              c(ruler, msavec_html, consensus), sep="  ")
+          format(c("", "", names(msa), "Consensus"), justify="left"),
+              c(ruler, ruler_line, msavec_html, consensus), sep="  ")
 
 
         msavec <- sapply(msavec, 
