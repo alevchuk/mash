@@ -112,7 +112,7 @@ colorizeWithPlugin <- function (msa, plugin_data) {
 ## Viewing large alignments in a web browser can be very efficient.
 ## The following example outputs an HTML formatted alignment with
 ## consensus line.
-StringSet2html <- function(start=1, ruller_step=20, end=length(msa[[1]]),
+StringSet2html <- function(start=1, ruler_step=20, end=length(msa[[1]]),
                            msa, ...) {
         if(class(msa)=="AAStringSet")
           msa <- AAStringSet(msa, start=start, end=end)
@@ -120,25 +120,28 @@ StringSet2html <- function(start=1, ruller_step=20, end=length(msa[[1]]),
           msa <- DNAStringSet(msa, start=start, end=end)
         msavec <- sapply(msa, toString)
 
-        offset <- (ruller_step-1)-nchar(nchar(msavec[1]))
-        # ruller <- paste(paste(paste(paste(rep(" ", offset), collapse=""),
+        offset <- (ruler_step-1)-nchar(nchar(msavec[1]))
+        # ruler <- paste(paste(paste(paste(rep(" ", offset), collapse=""),
         #   format(seq(0, 
-        #     nchar(msavec[1]), by=ruller_step)[-1]
+        #     nchar(msavec[1]), by=ruler_step)[-1]
         #   )), collapse=""), collapse="")
         n <- nchar(msavec[1])
-        ruller <- rep(" ", n)
-        ruller[seq(1, n, by=ruller_step)[-1] - 1] <- 
-          lapply(seq(1, n, by=ruller_step)[-1] - 1, function(x){
-          paste(" ", "<span class='ruller-mark'>", x, "</span>", sep="")
+        ruler <- rep(" ", n)
+        ruler[seq(1, n, by=ruler_step)[-1] - 1] <- 
+          lapply(seq(1, n, by=ruler_step)[-1] - 1, function(x){
+          paste(" ", "<span class='ruler-mark'>", x, "</span>", sep="")
         })
-        ruller <- lapply(ruller, nice_html_spacing)
-        ruller <- paste(ruller,  collapse="")
+        ruler <- lapply(ruler, nice_html_spacing)
+        ruler <- paste(ruler,  collapse="")
         consensus <- consensusString(msavec, ambiguityMap=".", ...)
         consensus <- nice_html_spacing_of_string(consensus)
         
-        msavec <- paste(msavec, rowSums(as.matrix(msa) != "-"), sep="  ")
-        msavec <- paste(format(c("", names(msa), "Consensus"), justify="left"),
-          c(ruller, msavec_html, consensus), sep="  ")
+        msavec_html <- 
+          paste(msavec_html, rowSums(as.matrix(msa) != "-"), sep="  ")
+
+        msavec <- paste(
+          format(c("", names(msa), "Consensus"), justify="left"),
+              c(ruler, msavec_html, consensus), sep="  ")
 
 
         msavec <- sapply(msavec, 
@@ -164,6 +167,6 @@ for (name.plugin in menu_data[["plugins"]]) {
   biostrings_msa = AAStringSet(msa)
   names(biostrings_msa) = headers
   
-  html <- StringSet2html(msa=biostrings_msa, ruller_step=20, threshold=0.7)
+  html <- StringSet2html(msa=biostrings_msa, ruler_step=20, threshold=0.7)
   writeLines(html, file.plugin_html)
 }
