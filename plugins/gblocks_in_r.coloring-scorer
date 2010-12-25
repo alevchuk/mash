@@ -82,6 +82,8 @@ out <- list(
   version="1",
   description="Gblocks open source re-implementation in R.",
   notes=list("See gblocks_0.91b plugin."),
+  links=list(c("Source Code", paste("https://github.com/alevchuk/sasha/blob/master/",
+   "plugins/gblocks_in_r.coloring-scorer", sep=""))),
   colors=colors)
 
 cat(toJSON(out))

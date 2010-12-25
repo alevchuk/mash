@@ -11,7 +11,7 @@ if(length(script_args) != 1) {
        cat(paste("Usage:", script_name, "<in_msa.json>", "\n\n"))
        cat(paste(
          "Required Arguments",
-         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.", 
+         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.",
          "\n",
          sep="\n"))
        quit()
@@ -26,17 +26,22 @@ msa <- paste(msa, sep="", collapse="")
 msa <- strsplit(msa, "")[[1]]
 msa <- matrix(msa, nrow=num_sequences, byrow=T)
 
-colors <- list()
+
+colors <- list(
+)
+
 
 out <- list(
   type="msa-highlights",
   version="1",
-  description="No scoring.",
-  links=list(c("Source Code", paste("https://github.com/alevchuk/sasha/blob/master/",
-   "plugins/nil.coloring-scorer", sep=""))),
-
-  colors=colors
-)
+  description=paste("A simple MSA scroring method based on",
+   "a amino acid substitution matrix (any of BLOSUM, PAM, PHAT, ...)."),
+  notes=list("Compute the column consensus as the single most frequent residue.",
+      "Lookup matrix: every residue in the column to the consensus.",
+      "Put residues into bins (best, good, OK)  according to tunable thresholds."
+    ),
+  colors=colors)
 
 cat(toJSON(out))
 cat("\n")
+
