@@ -38,7 +38,7 @@
 
       letter-spacing: 0px; white-space: normal;
       background-color: white; border-color: green;
-      border: 1px solid #999999; padding: 0.5em;
+      border: 5px solid #999999; padding: 0.5em;
 
       display: none;
     }
@@ -50,7 +50,7 @@
       margin-right: 1em;
       letter-spacing: 0px; white-space: normal;
       background-color: white; border-color: green;
-      border: 1px solid #999999; padding: 0.5em;
+      border: 5px solid #999999; padding: 0.5em;
 
       width: 30em;
 
@@ -65,7 +65,7 @@
       margin-top: 1px; margin-left: 1px;
       position: absolute; left: -12px; top: -12px;
      
-      border: 1px solid #999999; padding: 1px;
+      border: 2px solid #999999; padding: 1px;
     }
 
     g9{ color: White; background: #A02560}
@@ -136,7 +136,7 @@ error {color: Orange; background: Red; font-weight: Bold}
 
 <p style="margin-top: 2em;"></p> <!-- Spacing -->
 <p>
-  Generated on 2010-12-24 17:31:18 <br />
+  Generated on 2010-12-24 17:43:37 <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Valid HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
@@ -167,7 +167,7 @@ function apply_method(webdata_dir, method_name) {
 
 function show_method_info(webdata_dir, method_name) {
 
-  $('#plugin-menu').css('right', $('#main-menu').width() + 10);
+  $('#plugin-menu').css('right', $('#main-menu').width() + 15);
   $('#plugin-menu-title').html(method_name.replace("\.coloring-scorer", ""));
   $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
     $('#plugin-menu-citation').text(data.citation || "");
