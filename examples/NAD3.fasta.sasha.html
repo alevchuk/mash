@@ -23,17 +23,49 @@
       display: block;
     }
 
-    #method-selector {
-      position: fixed; right: 20px; top: 20px;
+    #bottom-right-corner {
+      border: 0; 
+
+      vertical-align: bottom;
+      position: fixed; right: 20px;
+      top: auto; bottom: 20px;
+    }
+
+    #main-menu {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+
       letter-spacing: 0px; white-space: normal;
-      background-color: white; padding: 0.5em;
-      border: 1px solid #999999;
+      background-color: white; border-color: green;
+      border: 1px solid #999999; padding: 0.5em;
+
       display: none;
     }
-    
-    .method-selector {
-      background-color: white;
-      right: 20px; left: auto;
+   
+    #plugin-menu { 
+      position: absolute; bottom: 0;
+      right: 30em; /* This will be adjusted by JavaScript */
+
+      margin-right: 1em;
+      letter-spacing: 0px; white-space: normal;
+      background-color: white; border-color: green;
+      border: 1px solid #999999; padding: 0.5em;
+
+      width: 30em;
+
+      display: none;
+    }
+
+    #plugin-menu-citation { font-style: italic }
+    #plugin-menu-affiliation { font-size: small }
+    #plugin-menu-description { margin-top: 0.5em }
+
+    #close-plugin-menu {
+      margin-top: 1px; margin-left: 1px;
+      position: absolute; left: -12px; top: -12px;
+     
+      border: 1px solid #999999; padding: 1px;
     }
 
     g9{ color: White; background: #A02560}
@@ -83,23 +115,36 @@ error {color: Orange; background: Red; font-weight: Bold}
 <div class="s"> Consensus   <b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>-</b><b>.</b><b>.</b><b>.</b><b>.</b><b>E</b><b>K</b><b>.</b><b>S</b><b>.</b><b>Y</b><b>E</b><b>C</b><b>G</b><b>F</b><b>.</b><b>P</b><b>.</b><b>.</b><b>-</b><b>.</b><b>A</b><b>R</b><b>.</b><b>.</b><b>F</b><b>.</b><b>.</b><b>R</b><b>F</b><b>.</b><b>L</b><b>.</b><b>.</b><b>I</b><b>L</b><b>F</b><b>.</b><b>.</b><b>F</b><b>D</b><b>L</b><b>E</b><b>.</b><b>.</b><b>.</b><b>L</b><b>.</b><b>P</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>-</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>F</b><b>L</b><b>.</b><b>I</b><b>L</b><b>T</b><b>.</b><b>G</b><b>.</b><b>.</b><b>Y</b><b>E</b><b>W</b><b>.</b><b>.</b><b>G</b><b>.</b><b>L</b><b>.</b><b>W</b><b>.</b><b>.</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>-</b> </div>
 </div>
 
-<div id="method-selector" 
-     style="top: auto; border-color: green; bottom: 20px"
-><h3 style="margin-top: 0">Main Menu</h3><div
->Scoring Methods:</div>
+<div id="bottom-right-corner">
+  <div id="plugin-menu"
+  ><button id="close-plugin-menu">&#x2a2f;</button
+  ><h3 id="plugin-menu-title" style="margin-top: 0"
+  >Plugin Menu</h3><div id="plugin-menu-citation"
+  ></div><div id="plugin-menu-affiliation"
+  ></div><div id="plugin-menu-description"
+  ></div><ul id="plugin-menu-notes"
+  ></ul><div id="plugin-menu-links"></div></div>
+
+  <div id="main-menu"
+  ><h3 style="margin-top: 0">Main Menu</h3><div
+  style="white-space: nowrap">Scoring Methods:</div>
+    <div id="method-selector"></div>
+  </div>
+
 </div>
 
-<p style="margin-top: 2em;"></p>
 
+<p style="margin-top: 2em;"></p> <!-- Spacing -->
 <p>
-  Generated on 2010-12-24 12:29:26 <br />
+  Generated on 2010-12-24 17:31:18 <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Valid HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
     >Valid CSS</a>
 </p>
 
-
+<!-- Large Spacing on the Bottom for Scrolling freedom-->
+<p style="margin-top: 30em;"></p>
 
 <script>
 function apply_method(webdata_dir, method_name) {
@@ -120,18 +165,55 @@ function apply_method(webdata_dir, method_name) {
   // ## });
 }
 
+function show_method_info(webdata_dir, method_name) {
+
+  $('#plugin-menu').css('right', $('#main-menu').width() + 10);
+  $('#plugin-menu-title').html(method_name.replace("\.coloring-scorer", ""));
+  $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
+    $('#plugin-menu-citation').text(data.citation || "");
+    $('#plugin-menu-affiliation').text(data.affiliations || "");
+    $('#plugin-menu-description').text(data.description || "");
+
+    $('#plugin-menu-notes').html("")
+    if(typeof(data.notes) !== 'undefined')
+      $.each(data.notes, function(index, value){
+        $('#plugin-menu-notes').append(
+           '<li id="plugin-menu-note-' + index + '"></li>'); 
+        $('#plugin-menu-note-' + index).text(value);
+      });
+
+    $('#plugin-menu-links').html("")
+    if(typeof(data.links) !== 'undefined')
+      $.each(data.links, function(index, value){
+        $('#plugin-menu-links').append(
+           '<a id="plugin-menu-link-' + index + '" href="">TEST</a> '); 
+        $('#plugin-menu-link-' + index).text(value[0]);
+        $('#plugin-menu-link-' + index).attr('href', value[1]);
+      });
+
+  });
+  $('#plugin-menu').show();
+}
+
+
+// Main
+
+$('#close-plugin-menu').click(function() {$("#plugin-menu").hide()});
+
 $.getJSON('NAD3.fasta_webdata/menu.json', function(data) {
-  $.each(data.plugins, function(k1, c) {
+  $.each(data.plugins, function(k1, method_name) {
     $('<button id="b' + k1 + '" class="method">' +
-      c.replace("\.coloring-scorer.html", "") + '</button><div>'
+      method_name.replace("\.coloring-scorer", "") + '</button><div>'
      ).appendTo('#method-selector');
 
     $('#b' + k1).click(function () {
-      apply_method(data.webdata_dir, c);
+      show_method_info(data.webdata_dir, method_name);
+      apply_method(data.webdata_dir, method_name);
     });
 
   });
-  $('#method-selector').show();
+
+  $('#main-menu').show();
 });
 </script>
 

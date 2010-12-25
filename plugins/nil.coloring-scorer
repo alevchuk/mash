@@ -28,7 +28,12 @@ msa <- matrix(msa, nrow=num_sequences, byrow=T)
 
 colors <- list()
 
-out <- list(type="msa-highlights", version="1", colors=colors)
+out <- list(
+  type="msa-highlights",
+  version="1",
+  description="No MSA scoring.",
+  colors=colors
+)
 
 cat(toJSON(out))
 cat("\n")

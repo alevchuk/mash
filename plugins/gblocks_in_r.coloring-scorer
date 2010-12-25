@@ -77,7 +77,12 @@ colors <- list(
 )
 
 
-out <- list(type="msa-highlights", version="1", colors=colors)
+out <- list(
+  type="msa-highlights",
+  version="1",
+  description="Gblocks open source re-implementation in R.",
+  notes=list("See gblocks_0.91b plugin."),
+  colors=colors)
 
 cat(toJSON(out))
 cat("\n")

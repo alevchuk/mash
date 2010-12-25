@@ -70,7 +70,33 @@ colors <- list(
   list(color="sb", positions=get_positions())
 )
 
-out <- list(type="msa-highlights", version="1", colors=colors)
+out <- list(
+  type="msa-highlights",
+  version="1",
+  citation=paste(
+          "Castresana, J. (2000).",
+          "Selection of conserved blocks from multiple alignments",
+          "for their use in phylogenetic analysis.",
+          "Molecular Biology and Evolution 17, 540-552."),
+  description="This plugin selects blocks that are very well conserved.",
+  affiliations=c("European Molecular Biology Laboratory, Heidelberg, Germany"),
+  notes=c(
+          "Designed to assist in Pylogenetic Analysis.",
+          paste("Removes poorly aligned or divergent regions",
+           "(e.g. saturated by substitutions)."), 
+          paste(
+           "Default parameters used to demonstrate Gblock's operation on",
+           "ND3 - a mitochondrial family common to Animals, Fungi, and Plants.")
+         ),
+  links=list(
+    c("Full Text", "http://mbe.oxfordjournals.org/content/17/4/540.full"),
+    c("HubMed", "http://www.hubmed.org/display.cgi?uids=10742046"),
+    c("Software Page", "http://molevol.cmima.csic.es/castresana/Gblocks.html")
+  ),
+
+  colors=colors
+)
+
 
 
 cat(toJSON(out))
