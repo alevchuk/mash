@@ -17,17 +17,89 @@ if(length(script_args) != 1) {
        quit()
 }
 
-msa_json_file <- script_args[[1]]
-msa <- fromJSON(readLines(msa_json_file))
+ma_json_file <- script_args[[1]]
+ma <- fromJSON(readLines(ma_json_file))
 
 # Convert to matrix
-num_sequences <- length(msa)
-msa <- paste(msa, sep="", collapse="")
-msa <- strsplit(msa, "")[[1]]
-msa <- matrix(msa, nrow=num_sequences, byrow=T)
+num_sequences <- length(ma)
+ma <- paste(ma, sep="", collapse="")
+ma <- strsplit(ma, "")[[1]]
+ma <- matrix(ma, nrow=num_sequences, byrow=T)
+
+
+# Calculate consensus (the simplest way)
+get_consensus <- function(x){
+  t <- table(x)
+  consensus <- names(t[t == max(t)])
+  if (length(consensus) > 1) {
+    return(sample(consensus, 1)) # Break a tie randomly
+  } else {
+    return(consensus)
+  }
+}
+
+consensus <- apply(ma, 2, get_consensus)
+
+# TODO: Save matrices into our own files
+suppressPackageStartupMessages(library(Biostrings))
+data(BLOSUM45)
+data(BLOSUM50)
+data(BLOSUM62)
+data(BLOSUM80)
+data(BLOSUM100)
+data(PAM30)
+data(PAM40)
+data(PAM70)
+data(PAM120)
+data(PAM250)
+# TODO: Get PHAT and Gonnet matrices which are not available in Biostrings
+
+#
+# Substitution matrix
+#
+
+B = BLOSUM62
+
+row.names(B)[row.names(B) == "*"] <- '-'
+colnames(B)[colnames(B) == "*"] <- '-'
+
+
+
+score_each_residue_in_column <- function(column_id) {
+  consensus_residue <- consensus[column_id]
+  ma_column <- ma[,column_id]
+  sapply(ma_column, function(residue) { B[residue, consensus_residue] }) 
+}
+
+scores <- lapply(1:ncol(ma), score_each_residue_in_column)
+scores <- matrix(unlist(scores), ncol=length(scores))
+
+
+# Threshlods
+
+BEST <- 7
+GOOD <- 5
+OK   <- 3
+
+BAD   <- -1
+WORSE <- -3
+WORST <- -4
+
+
+# Pick Colors
+get_positions <- function(from, to) {
+  list <- which(arr.ind=TRUE, (scores >= from) == (scores <= to))
+  lapply(1:nrow(list), function(x){a <- list[x,]; names(a) <- NULL; a})
+}
 
 
 colors <- list(
+  list(color="sb1", positions=get_positions(BEST, 100)),
+  list(color="sb2", positions=get_positions(GOOD, BEST - 1)),
+  list(color="sb3", positions=get_positions(OK, GOOD -1)),
+  list(color="sa1", positions=get_positions(BAD, OK - 1)),
+  list(color="sa2", positions=get_positions(WORSE, BAD - 1)),
+  list(color="sa3", positions=get_positions(-100, WORST))
 )
 
 
@@ -35,7 +107,7 @@ out <- list(
   type="msa-highlights",
   version="1",
   description=paste("A simple MSA scroring method based on",
-   "a amino acid substitution matrix (any of BLOSUM, PAM, PHAT, ...)."),
+   "a amino acid substitution matrix (any of BLOSUM, PAM, PHAT, Gonnet, ...)."),
   notes=list("Compute the column consensus as the single most frequent residue.",
       "Lookup matrix: every residue in the column to the consensus.",
       "Put residues into bins (best, good, OK)  according to tunable thresholds."

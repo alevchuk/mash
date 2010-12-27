@@ -75,19 +75,16 @@ msa <- fromJSON(readLines(file.msa))
 dir.plugins  <- paste(software.dir, "plugins", sep='/')
 plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
 
+# Put nil plugin in front
 nil_plugin   <- "nil.coloring-scorer"
-
-if (!length(which(nil_plugin == plugins))) {
-  first_plugin_path <-
-    paste(
-      dir.path.webdata, 
-      paste(plugins[[1]], "html", sep="."), sep = "/", collapse="")
-} else {
-  first_plugin_path <-
-    paste(
-      dir.path.webdata, 
-      paste(nil_plugin, "html", sep="."), sep = "/", collapse="")
+if (length(which(nil_plugin == plugins))) { # If nil is one of the plugins
+  plugins <<- unlist(list(nil_plugin, plugins[which(nil_plugin != plugins)])) 
 }
+
+first_plugin_path <-
+  paste(
+    dir.path.webdata, 
+    paste(plugins[[1]], "html", sep="."), sep = "/", collapse="")
 
 html_chunk <- paste(readLines(first_plugin_path), collapse="\n")
 
