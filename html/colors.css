@@ -1,5 +1,4 @@
-sb {color: White; background: Black}
-sb1 {color: White; background: #404040 }
+sb, sb1 {color: White; background: Black}
 sb2 {color: White; background: #707070 }
 sb3 {color: Black; background: #C0C0C0 }
 

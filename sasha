@@ -45,6 +45,9 @@ system(paste(paste(dir.core, "010-import-fasta", sep="/"),
   )
 )
 
+# Parse the configuration file and generate menu.json
+system(paste(paste(dir.core, "020-configure-plugins", sep="/"), dir.webdata))
+
 system(paste(paste(dir.core, "030-run-plugins", sep="/"),
     dir.webdata,
     dir.plugins

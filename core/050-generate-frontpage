@@ -72,14 +72,13 @@ if (length(grep('/', file.out)) > 0) {
 
 msa <- fromJSON(readLines(file.msa))
 
-dir.plugins  <- paste(software.dir, "plugins", sep='/')
-plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
+# The Menu file is prodced by 020-configure-plugins
+file.path.menu <- paste(dir.path.webdata, "menu.json", sep = "/", collapse="")
+file.name.menu <- paste(dir.name.webdata, "menu.json", sep = "/", collapse="")
 
-# Put nil plugin in front
-nil_plugin   <- "nil.coloring-scorer"
-if (length(which(nil_plugin == plugins))) { # If nil is one of the plugins
-  plugins <<- unlist(list(nil_plugin, plugins[which(nil_plugin != plugins)])) 
-}
+menu <- fromJSON(readLines(file.path.menu))
+
+plugins      <- menu$plugins
 
 first_plugin_path <-
   paste(
@@ -88,9 +87,6 @@ first_plugin_path <-
 
 html_chunk <- paste(readLines(first_plugin_path), collapse="\n")
 
-# The Menu file is prodced by 020-configure-plugins
-dir.path.menu <- paste(dir.path.webdata, "menu.json", sep = "/", collapse="")
-dir.name.menu <- paste(dir.name.webdata, "menu.json", sep = "/", collapse="")
 
 
 # Get CSS
@@ -110,5 +106,5 @@ writeLines(apply.template(
   msa_window_html=html_chunk,
   inline_css=paste(unlist(lapply(css_files, readLines)), collapse="\n"),
   title=title,
-  menu=dir.name.menu), file.out
+  menu=file.name.menu), file.out
 )

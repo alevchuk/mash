@@ -37,7 +37,6 @@ dir.path.webdata  <- sub("/$", "", script.args[[1]])
 dir.name.webdata  <- tail(strsplit(dir.path.webdata, "/")[[1]], 1)
 
 dir.plugins  <- paste(software.dir, "plugins", sep='/')
-plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
 
 
 file.msa     <- paste(dir.path.webdata, 'msa.json', sep='/')
@@ -48,9 +47,6 @@ headers      <- fromJSON(readLines(file.headers))
 
 file.menu    <- paste(dir.path.webdata, 'menu.json', sep='/')
 
-# Generate the Menu file
-writeLines(toJSON(list(type="menu", version="2", webdata_dir=dir.name.webdata,
-                  plugins=plugins)), file.menu)
 
 # Read the Menu file
 menu_data    <- fromJSON(readLines(file.menu))
@@ -158,7 +154,7 @@ StringSet2html <- function(start=1, ruler_step=20, end=length(msa[[1]]),
 
 # Get plugin list from menu
 # TODO:Check that at least 1 plugin exists
-for (name.plugin in menu_data[["plugins"]]) {
+for (name.plugin in menu_data$plugins) {
 
   file.plugin_data <- paste(dir.path.webdata, paste(name.plugin, "json", sep="."), sep = "/", collapse="")
   file.plugin_html <- paste(dir.path.webdata, paste(name.plugin, "html", sep="."), sep = "/", collapse="")
@@ -172,6 +168,6 @@ for (name.plugin in menu_data[["plugins"]]) {
   biostrings_msa = AAStringSet(msa)
   names(biostrings_msa) = headers
   
-  html <- StringSet2html(msa=biostrings_msa, ruler_step=20, threshold=0.7)
+  html <- StringSet2html(msa=biostrings_msa, ruler_step=20, threshold=0.9)
   writeLines(html, file.plugin_html)
 }
