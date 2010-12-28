@@ -42,30 +42,45 @@
 
       display: none;
     }
-   
+
     #plugin-menu { 
+      width: 10em;
+
       position: absolute; bottom: 0;
       right: 30em; /* This will be adjusted by JavaScript */
 
-      margin-right: 1em;
       letter-spacing: 0px; white-space: normal;
       background-color: white; border-color: green;
       border: 5px solid #999999; padding: 0.5em;
 
+      display: none;
+    }
+   
+    #plugin-info { 
       width: 30em;
+
+      position: absolute; bottom: 0;
+      right: 30em; /* This will be adjusted by JavaScript */
+
+      letter-spacing: 0px; white-space: normal;
+      background-color: white; border-color: green;
+      border: 5px solid #999999; padding: 0.5em;
 
       display: none;
     }
 
-    #plugin-menu-citation { font-style: italic }
-    #plugin-menu-affiliation { font-size: small }
-    #plugin-menu-description { margin-top: 0.5em }
+    #plugin-info-citation { font-style: italic }
+    #plugin-info-affiliation { font-size: small }
+    #plugin-info-description { margin-top: 0.5em }
 
-    #close-plugin-menu {
-      margin-top: 1px; margin-left: 1px;
-      position: absolute; left: -12px; top: -12px;
-    
-      border: 2px solid #999999; padding: 1px;
+
+    #close-plugin-menu, #close-plugin-info {
+    }
+
+    .right-button {
+      width: 100%;
+      text-align: right;
+      margin-top: 1em;
     }
 
     %%CSS%%
@@ -78,21 +93,50 @@
 <h2 style="float: left">Sequence Alignment Scoring Hypertext Analyzer</h2>
 <div style="float: left"><a href="http://github.com/alevchuk/sasha/">(R Source Code)</a></div>
 <div style="clear: left"></div>
-<h3>%%TITLE%%</h3>
+<h3 id="msa-title">%%TITLE%%</h3>
 
 <div id="msa-window">
 %%MSA%%
 </div>
 
 <div id="bottom-right-corner">
-  <div id="plugin-menu"
-  ><button id="close-plugin-menu">&nbsp;&#x2a2f;&nbsp;</button
-  ><h3 id="plugin-menu-title" style="margin-top: 0"
-  >Plugin Menu</h3><div id="plugin-menu-citation"
-  ></div><div id="plugin-menu-affiliation"
-  ></div><div id="plugin-menu-description"
-  ></div><ul id="plugin-menu-notes"
-  ></ul><div id="plugin-menu-links"></div></div>
+
+  <div id="plugin-info"
+    ><!--
+      /* #close-plugin-menu-x, #close-plugin-info-x {         */
+      /*   margin-top: 1px; margin-left: 1px;                 */
+      /*   position: absolute; left: -12px; top: -12px;       */
+      /*                                                      */
+      /*   border: 2px solid #999999; padding: 1px;           */
+      /* }                                                    */
+
+      // $('#close-plugin-info-x').click(function() {$("#plugin-info").hide()});
+      // $('#close-plugin-menu-x').click(function() {$("#plugin-menu").hide()});
+
+      <button id="close-plugin-info-x">&nbsp;&#x2a2f;&nbsp;</button>
+    >--><h3 style="margin-top: 0"
+                id="plugin-info-title"
+    >Plugin Menu</h3
+    ><div       id="plugin-info-citation"
+    ></div><div id="plugin-info-affiliation"
+    ></div><div id="plugin-info-description"
+    ></div><ul  id="plugin-info-notes"
+    ></ul><div  id="plugin-info-links"
+    ></div><div class="right-button"
+       ><button id="close-plugin-info">Close</button
+    ></div>
+  </div>
+
+  <div id="plugin-menu"><h3 style="margin-top: 0"
+                id="plugin-menu-title"
+    >Plugin Menu</h3
+    ><div
+      ><button id="show-plugin-info">Show Information</button
+      ><button id="show-plugin-info">Change Parameters</button
+    ></div
+    ><div class="right-button"
+       ><button id="close-plugin-menu">Close</button></div>
+  </div>
 
   <div id="main-menu"
   ><h3 style="margin-top: 0">Main Menu</h3><div
@@ -120,54 +164,82 @@ function apply_method(webdata_dir, method_name) {
   $.get(webdata_dir + "/" + method_name + ".html", function(data) {
     $('#msa-window').html(data); 
   });
+}
 
-  // ## ## Too slow!
-  // ## $.getJSON(method_name, function(data) {
-  // ## 
-  // ##   $.each(data.colors, function(k1, c) {
-  // ##     $.each(c.positions, function(k2, p) {
-  // ##       var residue = $('#seq' + p[0]).children().slice(p[1] - 1, p[2]);
-  // ##       residue.css('color', c.color[0]);
-  // ##       residue.css('background-color', c.color[1]);
-  // ##     });
-  // ##   });
-  // ## });
+function pretty_method(n) {
+  return(n.replace("\.coloring-scorer", ""))
 }
 
 function show_method_info(webdata_dir, method_name) {
 
-  $('#plugin-menu').css('right', $('#main-menu').width() + 15);
-  $('#plugin-menu-title').html(method_name.replace("\.coloring-scorer", ""));
-  $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
-    $('#plugin-menu-citation').text(data.citation || "");
-    $('#plugin-menu-affiliation').text(data.affiliations || "");
-    $('#plugin-menu-description').text(data.description || "");
+  $('#plugin-info').hide();
 
-    $('#plugin-menu-notes').html("")
+  // Place immediately to the right of the Plugin Menu
+  $('#plugin-info').css('right', (- $('#plugin-menu').position().left) + 15);
+
+
+  $('#plugin-info-title').text(pretty_method(method_name));
+
+  $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
+    $('#plugin-info-citation').text(data.citation || "");
+    $('#plugin-info-affiliation').text(data.affiliations || "");
+    $('#plugin-info-description').text(data.description || "");
+
+    $('#plugin-info-notes').html("")
     if(typeof(data.notes) !== 'undefined')
       $.each(data.notes, function(index, value){
-        $('#plugin-menu-notes').append(
-           '<li id="plugin-menu-note-' + index + '"></li>'); 
-        $('#plugin-menu-note-' + index).text(value);
+        $('#plugin-info-notes').append(
+           '<li id="plugin-info-note-' + index + '"></li>'); 
+        $('#plugin-info-note-' + index).text(value);
       });
 
-    $('#plugin-menu-links').html("")
+    $('#plugin-info-links').html("")
     if(typeof(data.links) !== 'undefined')
       $.each(data.links, function(index, value){
-        $('#plugin-menu-links').append(
-           '<a id="plugin-menu-link-' + index + '" href="">TEST</a> '); 
-        $('#plugin-menu-link-' + index).text(value[0]);
-        $('#plugin-menu-link-' + index).attr('href', value[1]);
+        $('#plugin-info-links').append(
+           '<a id="plugin-info-link-' + index + '" href="">TEST</a> '); 
+        $('#plugin-info-link-' + index).text(value[0]);
+        $('#plugin-info-link-' + index).attr('href', value[1]);
       });
 
   });
+  $('#plugin-info').show();
+}
+
+function show_method_menu(webdata_dir, method_name) {
+  $("#plugin-menu").hide()
+  $("#plugin-info").hide()
+
+  // Place immediately to the right of Main Menu
+  $('#plugin-menu').css('right', (- $('#main-menu').position().left) + 15);
+
+  $('#plugin-menu-title').text(pretty_method(method_name));
+
+  $('#show-plugin-info').unbind();
+  $('#show-plugin-info').click(
+    function(){ show_method_info(webdata_dir, method_name) });
+
   $('#plugin-menu').show();
 }
 
 
 // Main
 
-$('#close-plugin-menu').click(function() {$("#plugin-menu").hide()});
+
+$('#close-plugin-info').unbind();
+$('#close-plugin-info').click(function()   {$("#plugin-info").hide()});
+
+$('#close-plugin-menu').unbind();
+$('#close-plugin-menu').click(function() { 
+  $("#plugin-menu").hide()
+
+  // Place Plugin-Info immediately to the right of the Main Menu
+  $('#plugin-info').css('right', 
+    ($('#bottom-right-corner').width() - $('#main-menu').position().left)
+    + 15);
+});
+
+
 
 $.getJSON('%%JSON_MENU_FILE%%', function(data) {
   $.each(data.plugins, function(k1, method_name) {
@@ -175,8 +247,9 @@ $.getJSON('%%JSON_MENU_FILE%%', function(data) {
       method_name.replace("\.coloring-scorer", "") + '</button><div>'
      ).appendTo('#method-selector');
 
+    $('#b' + k1).unbind();
     $('#b' + k1).click(function () {
-      show_method_info(data.webdata_dir, method_name);
+      show_method_menu(data.webdata_dir, method_name);
       apply_method(data.webdata_dir, method_name);
     });
 

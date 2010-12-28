@@ -82,8 +82,6 @@ GOOD <- 4
 OK   <- 3
 
 BAD   <- -2
-WORSE <- -3
-WORST <- -4
 
 
 # Pick Colors
@@ -98,9 +96,7 @@ colors <- list(
   list(color="sb2", positions=get_positions(GOOD, BEST - 1)),
   list(color="sb3", positions=get_positions(OK, GOOD -1)),
 
-  list(color="sa1", positions=get_positions(WORSE - 1, BAD)),
-  list(color="sa2", positions=get_positions(WORST - 1, WORSE)),
-  list(color="sa3", positions=get_positions(-100, WORST))
+  list(color="sbad", positions=get_positions(-100, BAD))
 )
 
 

@@ -2,9 +2,7 @@ sb, sb1 {color: White; background: Black}
 sb2 {color: White; background: #707070 }
 sb3 {color: Black; background: #C0C0C0 }
 
-sa3 {color: #404040 }
-sa2 {color: #707070 }
-sa1 {color: #C0C0C0 }
+sbad {color: #C0C0C0 }
 
 error {color: Orange; background: Red; font-weight: Bold}
 
