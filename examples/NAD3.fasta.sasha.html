@@ -31,6 +31,13 @@
       position: absolute;
     }
 
+    #top-left-corner {
+      border: 0;
+
+      position: fixed; left: 20px;
+      bottom: auto; top: 20px;
+    }
+
     #bottom-right-corner {
       border: 0; 
 
@@ -39,13 +46,29 @@
       top: auto; bottom: 20px;
     }
 
+    #total-score-box {
+      width: 7em; height: 5em;
+      border: 5px solid #999999; 
+      background-color: white;
+      padding: 0.5em;
+    }
+
+    #total-score-value {
+      width: 100%;
+      text-align: center;
+    }
+
+    #total-score-title {
+      margin-top: 0;
+    }
+
     #main-menu {
       position: absolute;
       bottom: 0;
       right: 0;
 
       letter-spacing: 0px; white-space: normal;
-      background-color: white; border-color: green;
+      background-color: white;
       border: 5px solid #999999; padding: 0.5em;
 
       display: none;
@@ -149,6 +172,13 @@ error {color: Orange; background: Red; font-weight: Bold}
 <div class="s"> Consensus   <b>-</b><b>-</b><b>-</b><b>-</b><b>-</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>-</b><b>.</b><b>.</b><b>.</b><b>.</b><b>E</b><b>K</b><b>.</b><b>.</b><b>.</b><b>.</b><b>E</b><b>C</b><b>G</b><b>F</b><b>.</b><b>.</b><b>.</b><b>.</b><b>-</b><b>.</b><b>.</b><b>R</b><b>.</b><b>.</b><b>F</b><b>.</b><b>.</b><b>.</b><b>F</b><b>.</b><b>L</b><b>.</b><b>.</b><b>.</b><b>.</b><b>F</b><b>.</b><b>.</b><b>.</b><b>D</b><b>.</b><b>E</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>P</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>L</b><b>.</b><b>.</b><b>G</b><b>.</b><b>.</b><b>.</b><b>E</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>.</b><b>-</b><b>-</b> </div>
 </div>
 
+<div id="top-left-corner">
+  <div id="total-score-box">
+    <h3 id="total-score-title">Score:</h3>
+    <div id="total-score-value">N/A</div>
+  </div>
+</div>
+
 <div id="bottom-right-corner">
 
   <div id="plugin-info"
@@ -199,7 +229,7 @@ error {color: Orange; background: Red; font-weight: Bold}
 
 <p style="margin-top: 2em;"></p> <!-- Spacing -->
 <p>
-  Generated on 2010-12-28 16:36:27 <br />
+  Generated on 2010-12-28 18:05:44 <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Validate HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
@@ -217,16 +247,25 @@ error {color: Orange; background: Red; font-weight: Bold}
 
 <script>
 function apply_method(webdata_dir, method_name) {
-  $.get(webdata_dir + "/" + method_name + ".html", function(data) {
-    $('#msa-window').html(data); 
+  $.get(webdata_dir + "/" + method_name + ".html", function(msa_html) {
+    $('#msa-window').html(msa_html); 
   });
+
+  $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
+    if(typeof(data.score) !== 'undefined')
+      $('#total-score-value').text(data.score);
+    else
+      $('#total-score-value').text("N/A");
+
+  });
+
 }
 
 function pretty_method(n) {
   return(n.replace(/\.[0-9,a-z,-]+-scorer/, ""))
 }
 
-function show_method_info(webdata_dir, method_name) {
+function show_method_info(webdata_dir, method_name, data) {
 
   $('#plugin-info').hide();
 
@@ -253,7 +292,7 @@ function show_method_info(webdata_dir, method_name) {
     if(typeof(data.links) !== 'undefined')
       $.each(data.links, function(index, value){
         $('#plugin-info-links').append(
-           '<a id="plugin-info-link-' + index + '" href="">TEST</a> '); 
+           '<a id="plugin-info-link-' + index + '" href="">LINK</a> '); 
         $('#plugin-info-link-' + index).text(value[0]);
         $('#plugin-info-link-' + index).attr('href', value[1]);
       });

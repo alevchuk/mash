@@ -1,17 +1,25 @@
 #!/usr/bin/env Rscript
 
 library(rjson)
+library(seqinr)
 
 script_path <- sub("--file=","", commandArgs()[grep("--file=", commandArgs())])
 script_path_list <- strsplit(script_path, '/')[[1]]
 script_name <- script_path_list[[length(script_path_list)]]
+
+# Normally plugins don't need this because they should not have dependencies
+script_dir_list  <- script_path_list[1:(length(script_path_list)-1)]
+script_dir  <- paste(script_dir_list, sep='/', collapse="/")
+
+normd       <- paste(script_dir, "/bin/normd", sep="")
+
 
 script_args <- commandArgs(trailingOnly=T)
 if(length(script_args) != 1) {
        cat(paste("Usage:", script_name, "<in_msa.json>", "\n\n"))
        cat(paste(
          "Required Arguments",
-         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.", 
+         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.",
          "\n",
          sep="\n"))
        quit()
@@ -20,18 +28,32 @@ if(length(script_args) != 1) {
 msa_json_file <- script_args[[1]]
 msa <- fromJSON(readLines(msa_json_file))
 
-# Convert to matrix
-num_sequences <- length(msa)
-msa <- paste(msa, sep="", collapse="")
-msa <- strsplit(msa, "")[[1]]
-msa <- matrix(msa, nrow=num_sequences, byrow=T)
+
+
+
+get_score <- function () {
+
+  # Generate a Temporary FASTA file from MSA
+  ns <- paste("s", c(1:length(msa)), sep="")
+  tmp_file <- paste(msa_json_file, "_", script_name, "_tmp.fasta", sep="")
+  write.fasta(sequences=as.list(msa), names=ns, file=tmp_file)
+
+  # Call normd
+  normd_out_pipe <- pipe(paste(normd, tmp_file))
+  normd_out <- readLines(normd_out_pipe)
+
+  # Cleanup
+  system(paste("rm ", tmp_file, sep=""))
+
+  return(as.numeric(normd_out))
+}
 
 colors <- list()
 
 out <- list(
   type="msa-highlights",
   version="1",
-  description=paste("This plugin evaluates a Objective Function on the MSA.",
+  description=paste("The norMD Objective Function evaluates an entire MSA.",
    "It provides a single 0 to 1 decimal score."),
   citation=paste(
    "J.D. Thompson, F. Plewniak, R. Ripp, J.C. Thierry and O. Poch,",
@@ -51,7 +73,9 @@ out <- list(
     "sasha/blob/master/plugins/normd.0to1-scorer", sep=""))
   ),
 
-  colors=colors
+  colors=colors,
+
+  score=get_score()
 )
 
 cat(toJSON(out))
