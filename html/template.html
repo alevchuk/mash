@@ -23,19 +23,13 @@
       display: block;
     }
 
-    #scrollable-area {
-
-      /* Large cusions for scrolling freedom */
-      padding: 7em 40em 20em 10em; /* top right bottom left */
-
-      position: absolute;
-    }
-
     #top-left-corner {
       border: 0;
 
-      position: fixed; left: 20px;
+      position: fixed; left: 0.5cm;
       bottom: auto; top: 20px;
+
+      padding: 0;
     }
 
     #bottom-right-corner {
@@ -46,21 +40,42 @@
       top: auto; bottom: 20px;
     }
 
-    #total-score-box {
-      width: 7em; height: 5em;
-      border: 5px solid #999999; 
-      background-color: white;
-      padding: 0.5em;
+
+    #scrollable-area {
+
+      padding-top: 3cm;
+      padding-left: 4cm;
+
+      /* Large cusions for scrolling freedom */
+      padding-right: 40em;
+      padding-bottom: 20em;
+
+      position: absolute;
     }
 
-    #total-score-value {
-      width: 100%;
-      text-align: center;
+    #total-score-box {
+      height: 2.5cm;
+      width: 3cm;
+
+      border: 5px solid #999999; 
+      background-color: white;
+      padding: 0; margin: 0;
     }
 
     #total-score-title {
-      margin-top: 0;
+      margin: 0; padding: 0;
+      margin-top: 0.1em; padding-left: 0.5em;
+      position: absolute;
     }
+
+
+    #total-score-value {
+      text-align: center;
+      width: 100%; line-height: 2.5cm; /* = total-score-box */
+
+      position: relative;
+    }
+
 
     #main-menu {
       position: absolute;
@@ -138,7 +153,7 @@
 
 <div id="top-left-corner">
   <div id="total-score-box">
-    <h3 id="total-score-title">Score:</h3>
+    <h3 id="total-score-title">Score</h3>
     <div id="total-score-value">N/A</div>
   </div>
 </div>
@@ -216,10 +231,16 @@ function apply_method(webdata_dir, method_name) {
   });
 
   $.getJSON(webdata_dir + "/" + method_name + ".json", function(data) {
-    if(typeof(data.score) !== 'undefined')
+    if(typeof(data.score) !== 'undefined') {
       $('#total-score-value').text(data.score);
-    else
+      $('#total-score-value').css("font-size", "16pt");
+      $('#total-score-value').css("font-weight", "bold");
+    }
+    else {
       $('#total-score-value').text("N/A");
+      $('#total-score-value').css("font-size", "");
+      $('#total-score-value').css("font-weight", "");
+    }
 
   });
 
