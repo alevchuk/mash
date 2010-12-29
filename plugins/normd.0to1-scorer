@@ -1,0 +1,58 @@
+#!/usr/bin/env Rscript
+
+library(rjson)
+
+script_path <- sub("--file=","", commandArgs()[grep("--file=", commandArgs())])
+script_path_list <- strsplit(script_path, '/')[[1]]
+script_name <- script_path_list[[length(script_path_list)]]
+
+script_args <- commandArgs(trailingOnly=T)
+if(length(script_args) != 1) {
+       cat(paste("Usage:", script_name, "<in_msa.json>", "\n\n"))
+       cat(paste(
+         "Required Arguments",
+         "  <in_msa>  Input multiple sequence alignment (msa) in JSON format.", 
+         "\n",
+         sep="\n"))
+       quit()
+}
+
+msa_json_file <- script_args[[1]]
+msa <- fromJSON(readLines(msa_json_file))
+
+# Convert to matrix
+num_sequences <- length(msa)
+msa <- paste(msa, sep="", collapse="")
+msa <- strsplit(msa, "")[[1]]
+msa <- matrix(msa, nrow=num_sequences, byrow=T)
+
+colors <- list()
+
+out <- list(
+  type="msa-highlights",
+  version="1",
+  description=paste("This plugin evaluates a Objective Function on the MSA.",
+   "It provides a single 0 to 1 decimal score."),
+  citation=paste(
+   "J.D. Thompson, F. Plewniak, R. Ripp, J.C. Thierry and O. Poch,",
+   "Towards a reliable objective function for multiple sequence alignments.",
+   "J. Mol. Biol. 314 (2001), pp. 937–951."),
+  affiliations=c(paste(
+   "Laboratoire de Biologie et G\u00E9nomique Structurales Institut",
+   "de G\u00E9n\u00E9tique et de Biologie Mol\u00E9culaire et Cellulaire,",
+   "(CNRS/INSERM/ULP), B.P. 163, 67404 Illkirch Cedex, France")),
+  links=list(
+    c("Full Text",
+      "http://linkinghub.elsevier.com/retrieve/pii/S0022283601951873"),
+    c("Hubmed", "http://www.hubmed.org/display.cgi?uids=11734009"),
+    c("Source Code", paste("https://github.com/alevchuk/",
+    "sasha/blob/master/imports/norMD1_3.tar.gz", sep="")),
+    c("Wrapper Source Code", paste("https://github.com/alevchuk/",
+    "sasha/blob/master/plugins/normd.0to1-scorer", sep=""))
+  ),
+
+  colors=colors
+)
+
+cat(toJSON(out))
+cat("\n")

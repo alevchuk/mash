@@ -40,7 +40,7 @@ file.menu    <- paste(dir.path.webdata, 'menu.json', sep='/')
 
 
 dir.plugins  <- paste(software.dir, "plugins", sep='/')
-plugins      <- dir(dir.plugins, pattern="*.coloring-scorer$")
+plugins      <- dir(dir.plugins, pattern="*.[0-9,a-z,-]+-scorer$")
 
 
 # Put nil plugin in front

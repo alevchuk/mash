@@ -47,4 +47,4 @@ k
 m
 g
 q
-" | ${SRC_DIR}/gblocks_0.91b > /dev/null
+" | ${SRC_DIR}/bin/gblocks_0.91b > /dev/null

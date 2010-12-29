@@ -1,1 +1,1 @@
-{"type":"menu","version":"2","webdata_dir":"NAD3.fasta_webdata","plugins":["nil.coloring-scorer","gblocks_0.91b.coloring-scorer","gblocks_in_r.coloring-scorer","substitution-matrix-m1.coloring-scorer"]}
+{"type":"menu","version":"2","webdata_dir":"NAD3.fasta_webdata","plugins":["nil.coloring-scorer","gblocks_0.91b.coloring-scorer","gblocks_in_r.coloring-scorer","normd.0to1-scorer","substitution-matrix-m1.coloring-scorer"]}

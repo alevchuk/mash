@@ -23,6 +23,14 @@
       display: block;
     }
 
+    #scrollable-area {
+
+      /* Large cusions for scrolling freedom */
+      padding: 7em 40em 20em 10em; /* top right bottom left */
+
+      position: absolute;
+    }
+
     #bottom-right-corner {
       border: 0; 
 
@@ -90,9 +98,15 @@
 </head>
 <body>
 
-<h2 style="float: left">Sequence Alignment Scoring Hypertext Analyzer</h2>
-<div style="float: left"><a href="http://github.com/alevchuk/sasha/">(R Source Code)</a></div>
+
+<div id="scrollable-area">
+
+<h2 id="software-title" style="float: left"
+>Sequence Alignment Scoring Hypertext Analyzer</h2>
+<div style="float: left"><a href="http://github.com/alevchuk/sasha/"
+>(R Source Code)</a></div>
 <div style="clear: left"></div>
+
 <h3 id="msa-title">%%TITLE%%</h3>
 
 <div id="msa-window">
@@ -132,7 +146,7 @@
     >Plugin Menu</h3
     ><div
       ><button id="show-plugin-info">Show Information</button
-      ><button id="show-plugin-info">Change Parameters</button
+      ><button id="show-plugin-parameters">Change Parameters</button
     ></div
     ><div class="right-button"
        ><button id="close-plugin-menu">Close</button></div>
@@ -151,13 +165,19 @@
 <p>
   Generated on %%GEN_DATE%% <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
-    >Valid HTML5</a><br />
+    >Validate HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
-    >Valid CSS</a>
+    >Validate CSS</a>
 </p>
 
-<!-- Large Spacing on the Bottom for Scrolling freedom-->
-<p style="margin-top: 30em;"></p>
+
+
+
+</div><!-- end of scrollable-area -->
+
+
+
+
 
 <script>
 function apply_method(webdata_dir, method_name) {
@@ -167,7 +187,7 @@ function apply_method(webdata_dir, method_name) {
 }
 
 function pretty_method(n) {
-  return(n.replace("\.coloring-scorer", ""))
+  return(n.replace(/\.[0-9,a-z,-]+-scorer/, ""))
 }
 
 function show_method_info(webdata_dir, method_name) {
@@ -240,11 +260,12 @@ $('#close-plugin-menu').click(function() {
 });
 
 
+// Load configuration (Menus, Plugins, ...)
 
 $.getJSON('%%JSON_MENU_FILE%%', function(data) {
   $.each(data.plugins, function(k1, method_name) {
     $('<button id="b' + k1 + '" class="method">' +
-      method_name.replace("\.coloring-scorer", "") + '</button><div>'
+      pretty_method(method_name) + '</button><div>'
      ).appendTo('#method-selector');
 
     $('#b' + k1).unbind();
