@@ -1,0 +1,8 @@
+{"type":"msa-highlight","version":1,"colors":[
+{"color":["Black","Gold"],"positions":[[1,1,3],[2,4,6]]},
+{"color":["Black","Orange"],"positions":[[2,1,1]]},
+{"color":["Black","Red"],"positions":[[1,5,5]]},
+{"color":["White","navy"],"positions":[[2,2,3]]},
+{"color":["White","LightSkyBlue"],"positions":[[3,1,2]]},
+{"color":["White","SteelBlue"],"positions":[[3,4,5]]}
+]}
