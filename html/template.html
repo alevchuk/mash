@@ -17,7 +17,8 @@
      right: 4px;
    }
 
-   .method {
+   .method, .method:visited {
+      color: black;
       margin: 4px;
       margin-left: 1em;  
       display: block;
@@ -77,23 +78,11 @@
     }
 
 
-    #main-menu {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-
-      letter-spacing: 0px; white-space: normal;
-      background-color: white;
-      border: 5px solid #999999; padding: 0.5em;
-
-      display: none;
-    }
-
-    #plugin-menu { 
+    #main-menu, #plugin-menu, #plugin-parameters, #plugin-info { 
       width: 10em;
 
       position: absolute; bottom: 0;
-      right: 30em; /* This will be adjusted by JavaScript */
+      right: 0em; /* This will be adjusted by JavaScript */
 
       letter-spacing: 0px; white-space: normal;
       background-color: white; border-color: green;
@@ -101,19 +90,7 @@
 
       display: none;
     }
-   
-    #plugin-info { 
-      width: 30em;
 
-      position: absolute; bottom: 0;
-      right: 30em; /* This will be adjusted by JavaScript */
-
-      letter-spacing: 0px; white-space: normal;
-      background-color: white; border-color: green;
-      border: 5px solid #999999; padding: 0.5em;
-
-      display: none;
-    }
 
     #plugin-info-citation { font-style: italic }
     #plugin-info-affiliation { font-size: small }
@@ -159,6 +136,11 @@
 </div>
 
 <div id="bottom-right-corner">
+
+  <div id="plugin-parameters"
+    ><div class="right-button"
+       ><button id="close-plugin-parameters">Close</button></div>
+  </div>
 
   <div id="plugin-info"
     ><!--
@@ -250,6 +232,23 @@ function pretty_method(n) {
   return(n.replace(/\.[0-9,a-z,-]+-scorer/, ""))
 }
 
+// .---- New functions are usually added here
+// |
+// V
+
+
+function show_method_parameters(webdata_dir, method_name, data) {
+  $('#plugin-parameters').hide();
+  $("#plugin-info").hide()
+
+  // Place immediately to the right of the Plugin Menu
+  $('#plugin-parameters').css('right', 
+    (- $('#plugin-menu').position().left) + 15);
+
+  $('#plugin-parameters').show();
+}
+
+
 function show_method_info(webdata_dir, method_name, data) {
 
   $('#plugin-info').hide();
@@ -299,17 +298,22 @@ function show_method_menu(webdata_dir, method_name) {
   $('#show-plugin-info').click(
     function(){ show_method_info(webdata_dir, method_name) });
 
+  $('#show-plugin-parameters').unbind();
+  $('#show-plugin-parameters').click(
+    function(){ show_method_parameters(webdata_dir, method_name) });
+
   $('#plugin-menu').show();
 }
+
+
 
 
 // Main
 
 
-$('#close-plugin-info').unbind();
 $('#close-plugin-info').click(function()   {$("#plugin-info").hide()});
+$('#close-plugin-parameters').click(function(){$("#plugin-parameters").hide()});
 
-$('#close-plugin-menu').unbind();
 $('#close-plugin-menu').click(function() { 
   $("#plugin-menu").hide()
 
@@ -324,11 +328,15 @@ $('#close-plugin-menu').click(function() {
 
 $.getJSON('%%JSON_MENU_FILE%%', function(data) {
   $.each(data.plugins, function(k1, method_name) {
-    $('<button id="b' + k1 + '" class="method">' +
-      pretty_method(method_name) + '</button><div>'
-     ).appendTo('#method-selector');
+    if(pretty_method(method_name) == 'nil') {
+      $('<div><a href="#" id="b' + k1 + '" class="method">Clear</a></div>'
+       ).appendTo('#method-selector');
+    } else {
+      $('<div><button id="b' + k1 + '" class="method">' +
+        pretty_method(method_name) + '</button></div>'
+       ).appendTo('#method-selector');
+    }
 
-    $('#b' + k1).unbind();
     $('#b' + k1).click(function () {
       show_method_menu(data.webdata_dir, method_name);
       apply_method(data.webdata_dir, method_name);
