@@ -226,7 +226,7 @@ error {color: Orange; background: Red; font-weight: Bold}
 
 <p style="margin-top: 2em;"></p> <!-- Spacing -->
 <p>
-  Generated on 2011-01-05 17:07:25 <br />
+  Generated on 2011-01-05 17:23:11 <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Validate HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
@@ -347,16 +347,23 @@ function show_method_menu(webdata_dir, method_name) {
 // Main
 
 
-$('#close-plugin-info').click(function()   {$("#plugin-info").hide()});
-$('#close-plugin-parameters').click(function(){$("#plugin-parameters").hide()});
+$('#close-plugin-info').click(function() {
+  $("#plugin-info").hide()
+});
+
+$('#close-plugin-parameters').click(function(){
+  $("#plugin-parameters").hide()
+});
 
 $('#close-plugin-menu').click(function() { 
   $("#plugin-menu").hide()
 
   // Place Plugin-Info immediately to the right of the Main Menu
   $('#plugin-info').css('right', 
-    ($('#bottom-right-corner').width() - $('#main-menu').position().left)
-    + 15);
+    (- $('#main-menu').position().left) + 15);
+
+  $('#plugin-parameters').css('right', 
+    (- $('#main-menu').position().left) + 15);
 });
 
 

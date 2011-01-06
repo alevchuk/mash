@@ -58,7 +58,7 @@ data(PAM250)
 # Substitution matrix
 #
 
-B = BLOSUM62
+B = BLOSUM100
 
 row.names(B)[row.names(B) == "*"] <- '-'
 colnames(B)[colnames(B) == "*"] <- '-'

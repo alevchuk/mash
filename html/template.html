@@ -311,16 +311,23 @@ function show_method_menu(webdata_dir, method_name) {
 // Main
 
 
-$('#close-plugin-info').click(function()   {$("#plugin-info").hide()});
-$('#close-plugin-parameters').click(function(){$("#plugin-parameters").hide()});
+$('#close-plugin-info').click(function() {
+  $("#plugin-info").hide()
+});
+
+$('#close-plugin-parameters').click(function(){
+  $("#plugin-parameters").hide()
+});
 
 $('#close-plugin-menu').click(function() { 
   $("#plugin-menu").hide()
 
   // Place Plugin-Info immediately to the right of the Main Menu
   $('#plugin-info').css('right', 
-    ($('#bottom-right-corner').width() - $('#main-menu').position().left)
-    + 15);
+    (- $('#main-menu').position().left) + 15);
+
+  $('#plugin-parameters').css('right', 
+    (- $('#main-menu').position().left) + 15);
 });
 
 
