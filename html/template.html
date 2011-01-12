@@ -91,7 +91,7 @@
       display: none;
     }
 
-
+    #plugin-info { width: 20em }
     #plugin-info-citation { font-style: italic }
     #plugin-info-affiliation { font-size: small }
     #plugin-info-description { margin-top: 0.5em }
@@ -117,7 +117,7 @@
 <div id="scrollable-area">
 
 <h2 id="software-title" style="float: left"
->Sequence Alignment Scoring Hypertext Analyzer</h2>
+>Sequence Alignment Scoring Hyperlinkable Analyzer</h2>
 <div style="float: left"><a href="http://github.com/alevchuk/sasha/"
 >(Source Code in R)</a></div>
 <div style="clear: left"></div>
@@ -251,6 +251,7 @@ function show_method_parameters(webdata_dir, method_name, data) {
 
 function show_method_info(webdata_dir, method_name, data) {
 
+  $('#plugin-parameters').hide();
   $('#plugin-info').hide();
 
   // Place immediately to the right of the Plugin Menu

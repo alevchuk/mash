@@ -103,7 +103,7 @@ colors <- list(
 out <- list(
   type="msa-highlights",
   version="1",
-  description=paste("A simple MSA scroring method based on",
+  description=paste("A simple MSA scoring method based on",
    "a amino acid substitution matrix (any of BLOSUM, PAM, PHAT, Gonnet, ...)."),
   notes=list("Compute the column consensus as the single most frequent residue.",
       "Lookup matrix: every residue in the column to the consensus.",
@@ -111,6 +111,9 @@ out <- list(
     ),
   colors=colors)
 
-cat(toJSON(out))
+j <- toJSON(out)
+
+cat(j)
+
 cat("\n")
 

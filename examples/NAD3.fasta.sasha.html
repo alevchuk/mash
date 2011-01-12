@@ -91,7 +91,7 @@
       display: none;
     }
 
-
+    #plugin-info { width: 20em }
     #plugin-info-citation { font-style: italic }
     #plugin-info-affiliation { font-size: small }
     #plugin-info-description { margin-top: 0.5em }
@@ -134,7 +134,7 @@ error {color: Orange; background: Red; font-weight: Bold}
 <div id="scrollable-area">
 
 <h2 id="software-title" style="float: left"
->Sequence Alignment Scoring Hypertext Analyzer</h2>
+>Sequence Alignment Scoring Hyperlinkable Analyzer</h2>
 <div style="float: left"><a href="http://github.com/alevchuk/sasha/"
 >(Source Code in R)</a></div>
 <div style="clear: left"></div>
@@ -226,7 +226,7 @@ error {color: Orange; background: Red; font-weight: Bold}
 
 <p style="margin-top: 2em;"></p> <!-- Spacing -->
 <p>
-  Generated on 2011-01-05 17:25:28 <br />
+  Generated on 2011-01-11 18:01:02 <br />
   <a href="http://validator.w3.org/check?uri=referer&amp;ss=checked&amp;outline=checked"
     >Validate HTML5</a><br />
   <a href="http://jigsaw.w3.org/css-validator/check/referer"
@@ -287,6 +287,7 @@ function show_method_parameters(webdata_dir, method_name, data) {
 
 function show_method_info(webdata_dir, method_name, data) {
 
+  $('#plugin-parameters').hide();
   $('#plugin-info').hide();
 
   // Place immediately to the right of the Plugin Menu
