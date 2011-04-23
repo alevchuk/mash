@@ -2,6 +2,7 @@ Sequence Alignment Score Hyperlinkable Analyzer
 
 INPUT:
   ClustalW  - a standard format for storing multiple sequence alignments.
+  or
   FASTA     - all sequences should have the same length. "-" represents a gap.
 
 OUTPUT: 
@@ -9,7 +10,9 @@ OUTPUT:
   JSON file(s) - highlighting info for 1 or more scoring methods.
 
 REQUIREMENTS:
+
   All code is written in R.
+  Tested on: R version 2.12.0
 
   Required R libraries:
     * seqinr
