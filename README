@@ -1,4 +1,4 @@
-masha - Multiple Alignment Score Hyperlinkable Analyzer
+mash - Multiple Alignment Score HTML
 
 INPUT:
   ClustalW  - a standard format for storing multiple sequence alignments.
