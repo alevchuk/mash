@@ -1,16 +1,21 @@
 mash - Multiple Alignment Score HTML
 
+<h2>Screenshot</h2>
+<div><img alt="" src="https://raw2.github.com/alevchuk/mash/master/examples/mash-screenshot1.png" /></div>
+
 INPUT:
+--------
   ClustalW  - a standard format for storing multiple sequence alignments.
   or
-  FASTA     - all sequences should have the same length. "-" represents a gap.
+  FASTA     - all sequences must have the same length. "-" represents a gap.
 
 OUTPUT: 
+--------
   HTML file    - contains sequences.
   JSON file(s) - highlighting info for 1 or more scoring methods.
 
 REQUIREMENTS:
-
+--------
   All code is written in R.
   Tested on: R version 2.12.0
 
@@ -22,17 +27,19 @@ REQUIREMENTS:
   Results are viewable in a web browser.
 
 FEATURES:
+--------
   * Displays MSAs in HTML.
   * Integrates with many scoring methods.
   * Has a very compact HTML encoding.
   * Switches between multiple scoring methods seamlessly.
 
 SCORING METHODS AVAILABLE:
+--------
   * Gblocks official implementation
   * Gblocks unofficial open source implementation
 
 RELATED WORK:
-
+--------
   MView
     Source: http://bioweb2.pasteur.fr/docs/mview/
 
@@ -64,7 +71,7 @@ RELATED WORK:
 
 
 RELATED WORK (non-HTML):
-
+--------
   Belvu
     Source: http://sonnhammer.sbc.su.se/Belvu.html
 
