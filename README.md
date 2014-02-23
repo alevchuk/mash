@@ -7,9 +7,10 @@ FEATURES
 - Integrates with many scoring methods
 - Handles large MSAs
 
-SCREENSHOT
-----------
+SCREENSHOTS
+-----------
 <img alt="" src="https://raw2.github.com/alevchuk/mash/master/examples/mash-screenshot1.png" />
+<img alt="" src="https://raw2.github.com/alevchuk/mash/master/examples/mash-screenshot2.png" />
 
 INPUT
 -----
