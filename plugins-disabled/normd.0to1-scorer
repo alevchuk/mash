@@ -68,9 +68,9 @@ out <- list(
       "http://linkinghub.elsevier.com/retrieve/pii/S0022283601951873"),
     c("Hubmed", "http://www.hubmed.org/display.cgi?uids=11734009"),
     c("Source Code", paste("https://github.com/alevchuk/",
-    "sasha/blob/master/imports/norMD1_3.tar.gz", sep="")),
+    "mash/blob/master/imports/norMD1_3.tar.gz", sep="")),
     c("Wrapper Source Code", paste("https://github.com/alevchuk/",
-    "sasha/blob/master/plugins/normd.0to1-scorer", sep=""))
+    "mash/blob/master/plugins/normd.0to1-scorer", sep=""))
   ),
 
   colors=colors,

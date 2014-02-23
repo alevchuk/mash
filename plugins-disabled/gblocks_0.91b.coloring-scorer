@@ -94,7 +94,7 @@ out <- list(
     c("HubMed", "http://www.hubmed.org/display.cgi?uids=10742046"),
     c("Software Page", "http://molevol.cmima.csic.es/castresana/Gblocks.html"),
     c("Wrapper Souce Code", paste(
-      "https://github.com/alevchuk/sasha/blob/master/",
+      "https://github.com/alevchuk/mash/blob/master/",
       "plugins/gblocks_in_r.coloring-scorer"))
   ),
 

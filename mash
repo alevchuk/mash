@@ -3,7 +3,7 @@
 initial.options <- commandArgs()
 file.arg.name <- "--file="
 
-script.path <- sub(file.arg.name, "", 
+script.path <- sub(file.arg.name, "",
   initial.options[grep(file.arg.name, initial.options)])
 
 script.path.list <- strsplit(script.path, '/')[[1]]
@@ -28,7 +28,7 @@ fasta.file.msa  <- script.args[[1]]
 dir.plugins <- paste(software.dir, "plugins", sep='/')
 dir.core    <- paste(software.dir, "core", sep='/')
 
-results_file  <- paste(fasta.file.msa, "sasha", "html", sep='.')
+results_file  <- paste(fasta.file.msa, "mash", "html", sep='.')
 
 if (!file.exists(fasta.file.msa) || file.info(fasta.file.msa)["isdir"][[1]]) {
   cat(paste("ERROR:", fasta.file.msa, "does not exist\n"), file = stderr())

@@ -32,7 +32,7 @@ out <- list(
   type="msa-highlights",
   version="1",
   description="No scoring.",
-  links=list(c("Source Code", paste("https://github.com/alevchuk/sasha/blob/master/",
+  links=list(c("Source Code", paste("https://github.com/alevchuk/mash/blob/master/",
    "plugins/nil.coloring-scorer", sep=""))),
 
   colors=colors
