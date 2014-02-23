@@ -14,7 +14,7 @@ apply.template <- function(msa_window_html=msa_window_html,
         lines <- lapply(lines, function(l){sub("%%MSA%%", msa_window_html, l)})
         lines <- lapply(lines, function(l){sub("%%TITLE%%", title, l)})
         lines <- lapply(lines, function(l){sub("%%JSON_MENU_FILE%%", menu, l)})
-        lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", Sys.time(), l)})
+        lines <- lapply(lines, function(l){sub("%%GEN_DATE%%", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"), l)})
 
         lines <- paste(lines, sep = "", collapse="\n")
         return(lines)
