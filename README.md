@@ -3,7 +3,7 @@ mash - Multiple Alignment Score HTML
 FEATURES
 --------
 - Displays multiple sequence alignments in HTML
-- Compact HTML encoding (8 to 21 characters per residue)
+- HTML5 encoding (8 to 21 characters per residue)
 - Integrates with many scoring methods
 - Handles large MSAs
 
