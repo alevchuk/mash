@@ -3,7 +3,7 @@ mash - Multiple Alignment Score HTML
 FEATURES
 --------
 - Displays multiple sequence alignments in HTML
-- Has a compact HTML encoding (8 characters per residue)
+- Compact HTML encoding (8 to 21 characters per residue)
 - Integrates with many scoring methods
 - Handles large MSAs
 
@@ -66,22 +66,4 @@ http://guidance.tau.ac.il/
 
     """guide-tree based alignment confidence"""
     
-* Does MSA alignment (MAFFT, PRANK, or ClwstalW)
-* Offers scoring with 2 methods: Guidance, and Heads-or-Tails
-* Highlights in HTML according to score
-* Uses `<table>` HTML tags (20 characters per residue)
-
-### Belvu
-http://sonnhammer.sbc.su.se/Belvu.html
-
-    """Belvu is an X-windows viewer for multiple sequence alignments."""
-    
-* Not HTML
-* Highlights well-conserved columns/residues
-
-### Jalview
-http://www.jalview.org/
-
-    """Jalview is a multiple alignment editor written in Java."""
-
-* Not HTML
+* Does MSA
