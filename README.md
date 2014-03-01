@@ -4,8 +4,8 @@ FEATURES
 --------
 - Displays multiple sequence alignments in HTML
 - HTML5 encoding (8 to 21 characters per residue)
-- Integrates with many scoring methods
 - Handles large MSAs
+- Plug-in integration with scoring methods
 
 SCREENSHOTS
 -----------
